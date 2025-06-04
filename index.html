@@ -1,131 +1,124 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>AKIB SHIPPING</title>
-    <link rel="icon" href="Image/engineer.ico" />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-      integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="dark-mode.css" />
-
-    <link
-      href="https://fonts.googleapis.com/css2?family=Arizonia&family=Montserrat:wght@400;800&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
-    />
-    <script
-      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
-      integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
-      crossorigin="anonymous"
-    ></script>
-  </head>
-  <script
-    async
-    src="https://www.googletagmanager.com/gtag/js?id=G-WZXPVQDR2Q"
-  ></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AKIB SHIPPING</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=1400&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
     }
-    gtag("js", new Date());
 
-    gtag("config", "G-WZXPVQDR2Q");
-  </script>
-  <body class="container-fluid body_section">
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.75);
+      min-height: 100vh;
+      padding: 50px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 2.8em;
+      margin: 0;
+      animation: slideDown 1s ease-out;
+    }
+
+    header p {
+      font-size: 1.2em;
+      margin-top: 10px;
+      color: #ccc;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .assignments {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeIn 1.2s ease-in;
+    }
+
+    .assignments a {
+      display: block;
+      background: #007bff;
+      padding: 15px;
+      text-align: center;
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 10px;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .assignments a:hover {
+      background: #0056b3;
+      transform: translateY(-5px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.95em;
+      color: #ccc;
+    }
+
+    .socials a {
+      margin: 0 10px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .socials a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
     <header>
-      <nav class="navbar navbar-expand-lg navbar-light">
-        <a class="navbar-brand brand-name" href="#">AKIB ABU SALEH MD</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-              <a class="nav-link headerachor" href="index.html">Home</a> 
-              
-            </li>
-          </ul>
-        </div>
-      </nav>
+      <h1>AKIB ABU SALEH MD</h1>
+      <p>Professional Portfolio – AKIB SHIPPING</p>
     </header>
 
-    <section id="Home">
-      <div class="row column1">
-        <div class="col-lg-6 col-md-6 first-image">
-          <img class="boyimage" src="Image/20200630_162659.gif" alt="" />
-        </div>
-        <div class="col-lg-6 section-1">
-          <h1 class="Hello">
-        Hello All! I'm AKIB ABU SALEH MD – AKIB SHIPPING <span class="wave">👋</span>
-           </h1>
+    <div class="assignments">
+      <a href="#">Assignment 1</a>
+      <a href="#">Assignment 2</a>
+      <a href="#">Assignment 3</a>
+      <a href="#">Assignment 4</a>
+      <a href="#">Assignment 5</a>
+      <a href="#">Assignment 6</a>
+    </div>
 
-          <p>
-            This website is a portfolio for AKIB ABU SALEH MD showcasing weekly assignments and course work.
-
-          </p>
-          <div class="social_media_icon">
-  <a class="btn" href="https://www.instagram.com/iam_md.akib/" target="_blank">
-    <i class="fab fa-instagram"></i>
-  </a>
-  <a class="btn" href="https://github.com/Akib00000" target="_blank">
-    <i class="fab fa-github"></i>
-  </a>
-  <a class="btn" href="mailto:akibrahman1000@gmail.com" target="_blank">
-    <i class="fab fa-google"></i>
-  </a>
-</div>
-
-
-    </section>
-    <section id="Assignments">
-  <h2 style="margin-top: 50px;">Weekly Assignments</h2>
-  <ul style="list-style-type: none; padding: 0;">
-    <li><a href="#">Week 1: Company Logistics Process Flowchart</a></li>
-    <li><a href="#">Week 2: Logistic Flowchart Builder Web App</a></li>
-    <li><a href="#">Week 3: Lead Time and Bullwhip Effect</a></li>
-    <li><a href="#">Week 4: Catchup & TSP</a></li>
-    <li><a href="#">Week 5: TSP Game & Design Thinking</a></li>
-    <li><a href="#">Week 6: Inventory and Warehouse Heat Map</a></li>
-  </ul>
-</section>
-
-    <script src="dark-mode.js"></script>
-  </body>
+    <footer>
+      <p>Connect with me:</p>
+      <div class="socials">
+        <a href="https://www.instagram.com/iam_md.akib/" target="_blank">Instagram</a> |
+        <a href="https://github.com/Akib00000" target="_blank">GitHub</a> |
+        <a href="mailto:akibrahman1000@gmail.com">Email</a>
+      </div>
+      <p style="margin-top: 10px;">&copy; 2025 AKIB SHIPPING. All rights reserved.</p>
+    </footer>
+  </div>
+</body>
 </html>
