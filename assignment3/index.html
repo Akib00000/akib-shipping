@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Assignment 3: Logistics Flowchart Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #0a4d68;
+      text-align: center;
+    }
+    .flow-area {
+      border: 2px dashed #bbb;
+      background: white;
+      height: 500px;
+      margin-top: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .node {
+      position: absolute;
+      padding: 10px 15px;
+      background: #00bfff;
+      color: white;
+      border-radius: 8px;
+      cursor: move;
+      user-select: none;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Assignment 3: Logistics Flowchart Builder</h1>
+  <p style="text-align:center;">Drag and place nodes to build a logistics flowchart!</p>
+
+  <div class="flow-area" id="flowArea">
+    <div class="node" style="top: 20px; left: 20px;">Supplier</div>
+    <div class="node" style="top: 100px; left: 150px;">Warehouse</div>
+    <div class="node" style="top: 200px; left: 50px;">Transport</div>
+    <div class="node" style="top: 300px; left: 250px;">Retail</div>
+  </div>
+
+  <div class="footer">
+    <p><strong>Note:</strong> This is a demo version. Full features like arrows and exporting are not yet functional.</p>
+    <p><a href="report.html">View Report</a></p>
+  </div>
+
+  <script>
+    document.querySelectorAll(".node").forEach((node) => {
+      node.onmousedown = function (e) {
+        let shiftX = e.clientX - node.getBoundingClientRect().left;
+        let shiftY = e.clientY - node.getBoundingClientRect().top;
+
+        function moveAt(pageX, pageY) {
+          node.style.left = pageX - shiftX + 'px';
+          node.style.top = pageY - shiftY + 'px';
+        }
+
+        function onMouseMove(e) {
+          moveAt(e.pageX, e.pageY);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        node.onmouseup = function () {
+          document.removeEventListener('mousemove', onMouseMove);
+          node.onmouseup = null;
+        };
+      };
+
+      node.ondragstart = function () {
+        return false;
+      };
+    });
+  </script>
+</body>
+</html>
