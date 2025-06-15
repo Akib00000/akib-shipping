@@ -42,6 +42,7 @@
     });
 
     function processData(data) {
+      const clean = val => (val && typeof val === 'string') ? val.trim().toLowerCase() : val;
       const calcDays = (a, b) => (new Date(a) - new Date(b)) / (1000*60*60*24);
       const bySupplier = {}, byTransport = {}, byMonth = {}, byDisruption = {}, byProduct = {};
       const byDemand = {}, byOrder = {};
@@ -51,13 +52,19 @@
         const delay = calcDays(r.Actual_Delivery_Date, r.Expected_Delivery_Date);
         const m = new Date(r.Order_Date).getMonth() + 1;
 
-        const add = (obj, key, val) => (obj[key] = obj[key] || []).push(val);
-        add(bySupplier, r.Supplier?.trim() || 'Unknown', lead);
-        add(byTransport, r.Transportation_Mode?.trim() || 'Unknown', lead);
+        const add = (obj, key, val) => {
+          const cleaned = clean(key) || 'unknown';
+          obj[cleaned] = obj[cleaned] || [];
+          obj[cleaned].push(val);
+        };
+
+        add(bySupplier, r.Supplier, lead);
+        add(byTransport, r.Transportation_Mode, lead);
         add(byMonth, m, delay);
-        if (r.Disruption_Type && r.Disruption_Type.trim() !== 'None')
-          add(byDisruption, r.Disruption_Type.trim(), delay);
-        add(byProduct, r.Product_Category?.trim() || 'Unknown', lead);
+        if (clean(r.Disruption_Type) && clean(r.Disruption_Type) !== 'none') {
+          add(byDisruption, r.Disruption_Type, delay);
+        }
+        add(byProduct, r.Product_Category, lead);
         add(byDemand, m, r.Customer_Demand || 0);
         add(byOrder, m, r.Order_Quantity || 0);
       });
@@ -65,7 +72,7 @@
       const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
       const summarize = (obj, pickMax) =>
         Object.entries(obj)
-          .map(([k, v]) => [k, avg(v).toFixed(2)])
+          .map(([k, v]) => [capitalize(k), avg(v).toFixed(2)])
           .sort((a, b) => pickMax ? b[1] - a[1] : a[1] - b[1]);
 
       const results = [
@@ -81,13 +88,12 @@
       results.forEach(([title, table]) => {
         const card = document.createElement('div');
         card.className = 'card';
-        const body = `<div class="card-body">
+        card.innerHTML = `<div class="card-body">
           <h5 class="card-title">${title}</h5>
           <div class="table-container"><table class="table table-sm">
             <thead><tr><th>Key</th><th>Avg Days</th></tr></thead><tbody>
             ${table.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}
             </tbody></table></div></div>`;
-        card.innerHTML = body;
         resDiv.append(card);
       });
 
@@ -137,8 +143,13 @@
         options: { scales: { y: { beginAtZero: true } } }
       });
     }
+
+    function capitalize(str) {
+      return str?.charAt(0).toUpperCase() + str.slice(1);
+    }
   </script>
 </body>
 </html>
+
 
 
