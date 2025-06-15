@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Assignment 5 – Traveling Salesman Problem (TSP)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -9,7 +9,9 @@
     body { background: #f4f9ff; padding: 30px; font-family: 'Segoe UI', sans-serif; }
     .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
     h1, h2 { color: #007bff; margin-top: 20px; }
-    #tspCanvas { display: block; margin: 20px auto; border: 1px solid #ccc; }
+    canvas { display: block; margin: 20px auto; border: 1px solid #ccc; }
+    table { margin-top: 20px; }
+    th, td { text-align: center; }
     .footer { text-align: center; margin-top: 40px; color: #6c757d; }
   </style>
 </head>
@@ -18,42 +20,64 @@
     <h1>Assignment 5: Traveling Salesman Problem (TSP)</h1>
     <p><strong>Student:</strong> AKIB ABU SALEH MD │ <strong>ID:</strong> 2217655</p>
 
-    <!-- existing content -->
+    <h2>Problem Overview</h2>
+    <p>Determine the shortest delivery route through towns A–F and return to the Warehouse (WH). The D–E path is blocked and must be excluded.</p>
+
+    <h2>Problem Statement</h2>
+    <p>You are a delivery route planner. You need to find the shortest path for a delivery truck that visits all locations (WH, A–F) and returns to WH. The route must skip any route between D and E (path blocked). Use the given distance matrix to find and represent the route visually.</p>
+
+    <h2>Distance Matrix</h2>
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr><th></th><th>WH</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>WH</th><td>0</td><td>10</td><td>15</td><td>20</td><td>25</td><td>30</td><td>35</td></tr>
+        <tr><th>A</th><td>10</td><td>0</td><td>35</td><td>25</td><td>17</td><td>28</td><td>30</td></tr>
+        <tr><th>B</th><td>15</td><td>35</td><td>0</td><td>30</td><td>10</td><td>22</td><td>18</td></tr>
+        <tr><th>C</th><td>20</td><td>25</td><td>30</td><td>0</td><td>29</td><td>19</td><td>26</td></tr>
+        <tr><th>D</th><td>25</td><td>17</td><td>10</td><td>29</td><td>0</td><td><strong>X</strong></td><td>12</td></tr>
+        <tr><th>E</th><td>30</td><td>28</td><td>22</td><td>19</td><td><strong>X</strong></td><td>0</td><td>14</td></tr>
+        <tr><th>F</th><td>35</td><td>30</td><td>18</td><td>26</td><td>12</td><td>14</td><td>0</td></tr>
+      </tbody>
+    </table>
 
     <h2>Route Diagram (Digital)</h2>
-    <canvas id="tspCanvas" width="500" height="400"></canvas>
+    <canvas id="tspCanvas" width="600" height="400"></canvas>
 
     <h2>Reflection</h2>
-    <p>This exercise helped me understand route planning and the effect of blocked paths. Seeing a digital diagram enhances clarity and accuracy in logistics design.</p>
+    <p>This exercise helped me understand the complexity of route planning and how small disruptions (like blocked paths) can influence overall logistics. Seeing a digital diagram enhances clarity and accuracy in logistics design. During the catch-up week, I also reviewed previous assignments and improved my website content and functionality.</p>
 
-    <div class="footer">&copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655</div>
+    <div class="footer">
+      &copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655
+    </div>
   </div>
 
   <script>
     const canvas = document.getElementById('tspCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Define node positions
     const nodes = {
       WH: { x: 100, y: 50 },
       A:  { x: 200, y: 150 },
       D:  { x: 120, y: 250 },
-      F:  { x: 220, y: 300 },
+      F:  { x: 220, y: 320 },
       E:  { x: 320, y: 250 },
       C:  { x: 400, y: 150 },
       B:  { x: 300, y: 60 }
     };
-    const order = ['WH','A','D','F','E','C','B','WH'];
+
+    const order = ['WH', 'A', 'D', 'F', 'E', 'C', 'B', 'WH'];
 
     function drawNodes() {
       ctx.fillStyle = '#007bff';
       ctx.font = 'bold 14px sans-serif';
-      for (let k in nodes) {
-        const { x, y } = nodes[k];
+      for (let key in nodes) {
+        const { x, y } = nodes[key];
         ctx.beginPath();
-        ctx.arc(x, y, 8, 0, 2 * Math.PI);
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillText(k, x - 8, y - 12);
+        ctx.fillText(key, x - 10, y - 12);
       }
     }
 
@@ -73,7 +97,9 @@
       drawNodes();
       drawPath();
     }
+
     init();
   </script>
 </body>
 </html>
+
