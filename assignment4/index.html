@@ -2,121 +2,130 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Assignment 4 - Lead Time & Bullwhip Effect Analysis</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <title>Assignment 4 - Lead Time Analysis</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      padding: 40px;
-    }
-    h1 {
-      color: #007bff;
-    }
-    input[type="file"] {
-      margin: 20px 0;
-    }
-    .result {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .result p {
-      margin: 10px 0;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f9fa; }
+    h2 { color: #007bff; }
+    canvas { margin-bottom: 30px; }
   </style>
 </head>
 <body>
-  <h1>Assignment 4: Lead Time & Bullwhip Effect Analysis</h1>
-  <input type="file" id="upload" accept=".xlsx" />
-  <div class="result" id="results"></div>
+  <h2>Upload CSV for Lead Time & Bullwhip Effect Analysis</h2>
+  <input type="file" id="csvFile" accept=".csv" />
+  <div id="results"></div>
+  <canvas id="chart1" width="600" height="300"></canvas>
 
   <script>
-    document.getElementById('upload').addEventListener('change', handleFile, false);
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          const data = results.data;
 
-    function parseExcelDate(excelDate) {
-      const date = new Date((excelDate - 25569) * 86400 * 1000);
-      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    }
+          // Parse dates and calculate lead time & delays
+          data.forEach(row => {
+            row.Order_Date = new Date(row.Order_Date);
+            row.Expected_Delivery_Date = new Date(row.Expected_Delivery_Date);
+            row.Actual_Delivery_Date = new Date(row.Actual_Delivery_Date);
+            row.LeadTime = (row.Actual_Delivery_Date - row.Order_Date) / (1000 * 3600 * 24);
+            row.Delay = (row.Actual_Delivery_Date - row.Expected_Delivery_Date) / (1000 * 3600 * 24);
+            row.Month = row.Actual_Delivery_Date.getMonth() + 1;
+          });
 
-    function handleFile(e) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, {type: 'array'});
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, {raw: false, defval: ''});
+          // Q1. Supplier with highest average lead time
+          const suppliers = {};
+          data.forEach(row => {
+            if (!suppliers[row.Supplier]) suppliers[row.Supplier] = [];
+            suppliers[row.Supplier].push(row.LeadTime);
+          });
+          const avgSupplierLead = Object.entries(suppliers).map(([k,v]) => [k, v.reduce((a,b)=>a+b,0)/v.length]);
+          avgSupplierLead.sort((a,b) => b[1]-a[1]);
+          const topSupplier = avgSupplierLead[0][0];
 
-        const supplierLeadTimes = {};
-        const transportLeadTimes = {};
-        const delaysByMonth = {};
-        const delayByDisruption = {};
-        const leadByCategory = {};
+          // Q2. Transport mode with lowest lead time
+          const transport = {};
+          data.forEach(row => {
+            if (!transport[row.Transportation_Mode]) transport[row.Transportation_Mode] = [];
+            transport[row.Transportation_Mode].push(row.LeadTime);
+          });
+          const avgTransportLead = Object.entries(transport).map(([k,v]) => [k, v.reduce((a,b)=>a+b,0)/v.length]);
+          avgTransportLead.sort((a,b) => a[1]-b[1]);
+          const fastestTransport = avgTransportLead[0][0];
 
-        rows.forEach(row => {
-          const supplier = row['Supplier'].trim();
-          const transport = row['Transportation_Mode'].trim();
-          const disruption = row['Disruption_Type'].trim();
-          const category = row['Product_Category'].trim();
+          // Q3. Month with highest average delays
+          const months = {};
+          data.forEach(row => {
+            if (!months[row.Month]) months[row.Month] = [];
+            months[row.Month].push(row.Delay);
+          });
+          const avgMonthDelay = Object.entries(months).map(([k,v]) => [k, v.reduce((a,b)=>a+b,0)/v.length]);
+          avgMonthDelay.sort((a,b) => b[1]-a[1]);
+          const worstMonth = avgMonthDelay[0][0];
 
-          const orderDate = new Date(row['Order_Date']);
-          const expectedDate = new Date(row['Expected_Delivery_Date']);
-          const actualDate = new Date(row['Actual_Delivery_Date']);
-
-          const leadTime = (actualDate - orderDate) / (1000 * 3600 * 24);
-          const delay = (actualDate - expectedDate) / (1000 * 3600 * 24);
-          const month = actualDate.getMonth() + 1;
-
-          if (!isNaN(leadTime)) {
-            if (!supplierLeadTimes[supplier]) supplierLeadTimes[supplier] = [];
-            supplierLeadTimes[supplier].push(leadTime);
-
-            if (!transportLeadTimes[transport]) transportLeadTimes[transport] = [];
-            transportLeadTimes[transport].push(leadTime);
-
-            if (!leadByCategory[category]) leadByCategory[category] = [];
-            leadByCategory[category].push(leadTime);
-          }
-
-          if (!isNaN(delay)) {
-            if (!delaysByMonth[month]) delaysByMonth[month] = [];
-            delaysByMonth[month].push(delay);
-
-            if (disruption && disruption !== 'None') {
-              if (!delayByDisruption[disruption]) delayByDisruption[disruption] = [];
-              delayByDisruption[disruption].push(delay);
+          // Q4. Disruption type with longest delay
+          const disruptions = {};
+          data.forEach(row => {
+            if (row.Disruption_Type && row.Disruption_Type !== "None") {
+              if (!disruptions[row.Disruption_Type]) disruptions[row.Disruption_Type] = [];
+              disruptions[row.Disruption_Type].push(row.Delay);
             }
-          }
-        });
+          });
+          const avgDisruptionDelay = Object.entries(disruptions).map(([k,v]) => [k, v.reduce((a,b)=>a+b,0)/v.length]);
+          avgDisruptionDelay.sort((a,b) => b[1]-a[1]);
+          const worstDisruption = avgDisruptionDelay[0][0];
 
-        function avg(arr) {
-          return arr.reduce((a, b) => a + b, 0) / arr.length;
+          // Q5. Product category with shortest average lead time
+          const products = {};
+          data.forEach(row => {
+            if (!products[row.Product_Category]) products[row.Product_Category] = [];
+            products[row.Product_Category].push(row.LeadTime);
+          });
+          const avgProductLead = Object.entries(products).map(([k,v]) => [k, v.reduce((a,b)=>a+b,0)/v.length]);
+          avgProductLead.sort((a,b) => a[1]-b[1]);
+          const bestProduct = avgProductLead[0][0];
+
+          // Show results
+          document.getElementById("results").innerHTML = `
+            <h3>Analysis Results:</h3>
+            <ul>
+              <li><strong>Highest average lead time:</strong> ${topSupplier}</li>
+              <li><strong>Fastest transport mode:</strong> ${fastestTransport}</li>
+              <li><strong>Worst month for delay:</strong> ${worstMonth}</li>
+              <li><strong>Most disruptive type:</strong> ${worstDisruption}</li>
+              <li><strong>Best product category (shortest lead time):</strong> ${bestProduct}</li>
+            </ul>`;
+
+          // Chart: average delay by disruption
+          const ctx = document.getElementById('chart1').getContext('2d');
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: avgDisruptionDelay.map(d => d[0]),
+              datasets: [{
+                label: 'Avg Delay (Days)',
+                data: avgDisruptionDelay.map(d => d[1]),
+                backgroundColor: '#007bff'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
         }
-
-        function getMaxKey(obj) {
-          return Object.keys(obj).reduce((a, b) => avg(obj[a]) > avg(obj[b]) ? a : b);
-        }
-
-        function getMinKey(obj) {
-          return Object.keys(obj).reduce((a, b) => avg(obj[a]) < avg(obj[b]) ? a : b);
-        }
-
-        const resultDiv = document.getElementById('results');
-        resultDiv.innerHTML = `
-          <p><strong>Supplier with highest average lead time:</strong> ${getMaxKey(supplierLeadTimes)}</p>
-          <p><strong>Transportation mode with lowest average lead time:</strong> ${getMinKey(transportLeadTimes)}</p>
-          <p><strong>Month with highest average delivery delay:</strong> ${getMaxKey(delaysByMonth)}</p>
-          <p><strong>Disruption type with longest average delay:</strong> ${getMaxKey(delayByDisruption)}</p>
-          <p><strong>Product category with shortest average lead time:</strong> ${getMinKey(leadByCategory)}</p>
-        `;
-      };
-      reader.readAsArrayBuffer(e.target.files[0]);
-    }
+      });
+    });
   </script>
 </body>
 </html>
+
 
 
 
