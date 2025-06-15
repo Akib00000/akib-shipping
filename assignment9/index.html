@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Assignment 12 – ABC Classification & Slotting</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f0f8ff; font-family: 'Segoe UI', sans-serif; padding: 30px; }
+    .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+    h1, h2, h3 { color: #007bff; margin-top: 20px; }
+    pre, table { background: #f8f9fa; padding: 15px; border-radius: 5px; }
+    .footer { margin-top: 40px; text-align: center; color: #6c757d; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Week 12: ABC Classification and Slotting Strategy</h1>
+  <p><strong>Student:</strong> AKIB ABU SALEH MD | <strong>ID:</strong> 2217655</p>
+
+  <h2>1. Empathize</h2>
+  <p>Our stakeholders are warehouse pickers and logistics managers who face frequent congestion and delays in retrieving high-activity items because the layout doesn't match SKU activity levels.</p>
+
+  <h2>2. Define</h2>
+  <p><strong>Problem Statement:</strong> “Our warehouse layout does not reflect SKU activity levels, causing unnecessary travel time and pick delays.”</p>
+
+  <h2>3. Ideate</h2>
+  <ul>
+    <li>Sort SKUs by pick frequency.</li>
+    <li>Apply Pareto analysis and classify items into A, B, and C classes.</li>
+    <li>Redesign layout so A items are nearest to the dock at (4,3).</li>
+  </ul>
+
+  <h2>4. Prototype: ABC Classification</h2>
+  <p>Based on the heatmap and pick frequencies, here is a summary:</p>
+  <pre>
+Top A SKUs (20%): SKU29, SKU27, SKU11, SKU16, SKU5, SKU20
+Next B SKUs (30%): SKU7, SKU8, SKU25, SKU0, SKU3, SKU9, SKU12, SKU21, SKU10
+Remaining C SKUs: All others
+  </pre>
+
+  <h2>5. Revised Warehouse Layout</h2>
+  <p><strong>Dock Location:</strong> (4,3), <strong>Obstacle:</strong> (2,4)</p>
+  <p>New optimized layout:</p>
+  <table class="table table-bordered text-center">
+    <thead>
+      <tr><th>Row/Aisle</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+    </thead>
+    <tbody>
+      <tr><th>0</th><td>SKU4</td><td>SKU1</td><td>SKU23</td><td>SKU24</td><td>SKU17</td><td>SKU14</td></tr>
+      <tr><th>1</th><td>SKU13</td><td>SKU19</td><td>SKU18</td><td>SKU6</td><td>SKU26</td><td>SKU15</td></tr>
+      <tr><th>2</th><td>SKU2</td><td>SKU22</td><td>SKU30</td><td>SKU28</td><td><strong>X</strong></td><td>SKU31</td></tr>
+      <tr><th>3</th><td>SKU32</td><td><strong>A</strong>SKU29</td><td><strong>A</strong>SKU27</td><td><strong>A</strong>SKU11</td><td><strong>A</strong>SKU16</td><td><strong>B</strong>SKU7</td></tr>
+      <tr><th>4</th><td><strong>B</strong>SKU8</td><td><strong>A</strong>SKU5</td><td><strong>A</strong>SKU20</td><td><strong>B</strong>SKU25</td><td><strong>Dock</strong></td><td><strong>B</strong>SKU0</td></tr>
+    </tbody>
+  </table>
+
+  <h2>6. Justification & Impact</h2>
+  <p>
+    The revised layout brings all A-class SKUs within close proximity to the dock at (4,3), drastically reducing walking distance and time. B-class SKUs are positioned around A zones, allowing reasonable access. C-class SKUs are stored further from the dock, where frequent access is not necessary.
+  </p>
+
+  <h2>7. Reflection</h2>
+  <p>
+    This activity taught me how slotting strategies directly impact warehouse efficiency. By analyzing pick frequencies and applying ABC classification, I learned to make decisions that can streamline logistics operations and improve worker productivity.
+  </p>
+
+  <div class="footer">
+    &copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655
+  </div>
+</div>
+</body>
+</html>
