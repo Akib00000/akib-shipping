@@ -21,6 +21,11 @@
       color: #007bff;
       margin-top: 20px;
     }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      border: 1px solid #ccc;
+    }
     ul {
       padding-left: 20px;
     }
@@ -37,7 +42,6 @@
     <p><strong>Student:</strong> AKIB ABU SALEH MD<br><strong>ID:</strong> 2217655</p>
 
     <h2>Design Thinking Practice</h2>
-
     <h3>1. Empathize</h3>
     <p><strong>Users:</strong> Small logistics companies facing delivery inefficiencies.</p>
     <ul>
@@ -68,9 +72,85 @@
       <li><strong>Response:</strong> Plan to include in next version.</li>
     </ul>
 
+    <h2>TSP Game – The Route Challenge</h2>
+    <p>Click the button below to find the shortest path across locations in a delivery network.</p>
+    <canvas id="tspCanvas" width="600" height="400"></canvas>
+    <div class="text-center">
+      <button onclick="solveTSP()" class="btn btn-primary">Solve TSP</button>
+    </div>
+
     <div class="footer">
       &copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655
     </div>
   </div>
+
+  <script>
+    const canvas = document.getElementById("tspCanvas");
+    const ctx = canvas.getContext("2d");
+    const cities = [
+      {x: 50, y: 60}, {x: 200, y: 80}, {x: 300, y: 220},
+      {x: 100, y: 300}, {x: 400, y: 150}, {x: 500, y: 320}
+    ];
+
+    function drawCities() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "blue";
+      cities.forEach((c, i) => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillText("City " + (i + 1), c.x + 8, c.y + 5);
+      });
+    }
+
+    function drawPath(path) {
+      ctx.strokeStyle = "red";
+      ctx.beginPath();
+      ctx.moveTo(cities[path[0]].x, cities[path[0]].y);
+      for (let i = 1; i < path.length; i++) {
+        ctx.lineTo(cities[path[i]].x, cities[path[i]].y);
+      }
+      ctx.lineTo(cities[path[0]].x, cities[path[0]].y);
+      ctx.stroke();
+    }
+
+    function solveTSP() {
+      let path = cities.map((_, i) => i);
+      let bestPath = [...path];
+      let minDist = distance(path);
+
+      function distance(p) {
+        let d = 0;
+        for (let i = 0; i < p.length - 1; i++) {
+          d += Math.hypot(cities[p[i+1]].x - cities[p[i]].x, cities[p[i+1]].y - cities[p[i]].y);
+        }
+        d += Math.hypot(cities[p[0]].x - cities[p[p.length - 1]].x, cities[p[0]].y - cities[p[p.length - 1]].y);
+        return d;
+      }
+
+      function permute(arr, l = 1) {
+        if (l === arr.length - 1) {
+          const d = distance(arr);
+          if (d < minDist) {
+            minDist = d;
+            bestPath = [...arr];
+          }
+        } else {
+          for (let i = l; i < arr.length; i++) {
+            [arr[l], arr[i]] = [arr[i], arr[l]];
+            permute(arr, l + 1);
+            [arr[l], arr[i]] = [arr[i], arr[l]];
+          }
+        }
+      }
+
+      permute(path);
+      drawCities();
+      drawPath(bestPath);
+    }
+
+    drawCities();
+  </script>
 </body>
 </html>
+
