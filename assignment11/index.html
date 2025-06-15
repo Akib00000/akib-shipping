@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Week 13 - Counterfeit Supplements Analysis</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; background-color: #f9f9f9; }
+    h1, h2, h3 { color: #2c3e50; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; margin-top: 30px; }
+    h3 { font-size: 18px; margin-top: 20px; }
+    ul { padding-left: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+    th { background-color: #eee; }
+  </style>
+</head>
+<body>
+
+<h1>📦 Week 13 - Counterfeit Supplements Analysis</h1>
+
+<h2>🔍 Problem Overview</h2>
+<p>Amazon’s commingled inventory system mixes identical products from different sellers, making distribution fast—but increasing the risk of counterfeit supplements. Our goal is to detect these fakes by analyzing listing data.</p>
+
+<h2>🎯 Assignment Goals</h2>
+<ul>
+  <li>Classify data fields into USEFUL, NOISE, and UNSURE</li>
+  <li>Explain the importance of USEFUL fields</li>
+  <li>Propose hypotheses for identifying fake supplements</li>
+</ul>
+
+<h2>📊 Field Categorization</h2>
+<table>
+  <thead>
+    <tr><th>Field</th><th>Category</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>listing_id</td><td>USEFUL</td></tr>
+    <tr><td>product_title</td><td>USEFUL</td></tr>
+    <tr><td>brand_name</td><td>USEFUL</td></tr>
+    <tr><td>seller_id</td><td>USEFUL</td></tr>
+    <tr><td>average_rating</td><td>USEFUL</td></tr>
+    <tr><td>review_count</td><td>USEFUL</td></tr>
+    <tr><td>price</td><td>USEFUL</td></tr>
+    <tr><td>product_category</td><td>USEFUL</td></tr>
+    <tr><td>fulfilled_by</td><td>USEFUL</td></tr>
+    <tr><td>inventory_type</td><td>USEFUL</td></tr>
+    <tr><td>image_url</td><td>NOISE</td></tr>
+    <tr><td>listing_url</td><td>NOISE</td></tr>
+    <tr><td>asin</td><td>NOISE</td></tr>
+    <tr><td>package_size</td><td>UNSURE</td></tr>
+    <tr><td>date_first_available</td><td>UNSURE</td></tr>
+  </tbody>
+</table>
+
+<h2>📌 Explanations for USEFUL Fields</h2>
+<ul>
+  <li><strong>listing_id:</strong> Tracks individual product entries.</li>
+  <li><strong>product_title:</strong> Can reveal subtle name changes often used by counterfeiters.</li>
+  <li><strong>brand_name:</strong> Helps identify spoofed or uncommon brands.</li>
+  <li><strong>seller_id:</strong> Useful for spotting repeat offenders.</li>
+  <li><strong>average_rating:</strong> Lower ratings can signal customer dissatisfaction with fakes.</li>
+  <li><strong>review_count:</strong> Low count might indicate a new or suspicious listing.</li>
+  <li><strong>price:</strong> Fakes often undercut market prices significantly.</li>
+  <li><strong>product_category:</strong> Confirms we’re analyzing actual supplements.</li>
+  <li><strong>fulfilled_by:</strong> Commingling increases counterfeit risks for Amazon-fulfilled items.</li>
+  <li><strong>inventory_type:</strong> Returned or used products may include counterfeits.</li>
+</ul>
+
+<h2>🧠 Hypotheses (IF ... THEN ...)</h2>
+<ol>
+  <li><strong>IF</strong> a product is priced significantly below the category average, <strong>THEN</strong> it may be counterfeit.</li>
+  <li><strong>IF</strong> a seller_id appears frequently among low-rated listings, <strong>THEN</strong> they may be distributing fake products.</li>
+  <li><strong>IF</strong> a product is fulfilled by Amazon and inventory_type is not "new", <strong>THEN</strong> it has a higher counterfeit risk due to returns being commingled.</li>
+</ol>
+
+</body>
+</html>
