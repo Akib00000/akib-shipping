@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Assignment 12 – ABC Classification & Slotting Strategy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f9f9f9;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    h1, h2 {
+      color: #007bff;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Assignment 12: ABC Classification & Slotting Strategy</h1>
+    <p><strong>Student:</strong> AKIB ABU SALEH MD │ <strong>ID:</strong> 2217655</p>
+
+    <h2>Design Thinking Steps</h2>
+    <h3>Empathize</h3>
+    <p>Warehouse workers and managers face congestion and inefficiencies due to unoptimized layouts. They need a better strategy to reduce travel distance and improve picking speed.</p>
+
+    <h3>Define</h3>
+    <p><strong>Problem Statement:</strong> Our warehouse layout does not reflect SKU activity levels, leading to extra travel time and delays during order picking.</p>
+
+    <h3>Ideate</h3>
+    <ul>
+      <li>Classify SKUs based on pick frequency (ABC classification)</li>
+      <li>Design new zones prioritizing accessibility</li>
+      <li>Apply Pareto analysis to determine which SKUs should be closer to the dock</li>
+    </ul>
+
+    <h3>Prototype</h3>
+    <p>Using the 5x6 warehouse grid and pick frequency data, SKUs were classified:</p>
+    <ul>
+      <li><strong>A items</strong> (Top 20% of cumulative picks) were placed closest to the dock</li>
+      <li><strong>B items</strong> (Next 30%) were placed in mid-access areas</li>
+      <li><strong>C items</strong> (Remaining 50%) were stored farthest away or in less accessible zones</li>
+    </ul>
+
+    <h3>Test</h3>
+    <p>By comparing the heatmap of the initial and optimized layouts, we observed that most of the high-frequency items were now closer to the dock at (4,3), minimizing travel distance and expected congestion.</p>
+
+    <h2>Results & Justification</h2>
+    <p>I performed a Pareto analysis and computed the cumulative pick frequency percentages. Based on this, I assigned ABC categories and rearranged SKU positions accordingly, avoiding the blocked cell at (2,4). This led to a more efficient layout.</p>
+    
+    <p><strong>Tools Used:</strong> Excel (CSV analysis), heatmap visualization, HTML for documentation</p>
+
+    <p>Full documentation with updated grid and heatmap is available in the revised CSV and visual layout files.</p>
+
+    <div class="footer">&copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655</div>
+  </div>
+</body>
+</html>
