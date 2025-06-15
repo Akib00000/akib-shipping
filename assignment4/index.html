@@ -21,7 +21,6 @@
     </div>
 
     <div id="results"></div>
-
     <div id="chartsSection"></div>
   </div>
 
@@ -33,7 +32,13 @@
     document.getElementById('csvInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
-      Papa.parse(file, { header: true, dynamicTyping: true, complete: res => processData(res.data) });
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        transformHeader: header => header.trim(),
+        complete: res => processData(res.data)
+      });
     });
 
     function processData(data) {
@@ -45,24 +50,23 @@
         const lead = calcDays(r.Actual_Delivery_Date, r.Order_Date);
         const delay = calcDays(r.Actual_Delivery_Date, r.Expected_Delivery_Date);
         const m = new Date(r.Order_Date).getMonth() + 1;
-        const add = (obj, key, val) => (obj[key] = obj[key]||[]).push(val);
 
-        add(bySupplier, r.Supplier||'Unknown', lead);
-        add(byTransport, r.Transportation_Mode||'Unknown', lead);
+        const add = (obj, key, val) => (obj[key] = obj[key] || []).push(val);
+        add(bySupplier, r.Supplier?.trim() || 'Unknown', lead);
+        add(byTransport, r.Transportation_Mode?.trim() || 'Unknown', lead);
         add(byMonth, m, delay);
-        if (r.Disruption_Type && r.Disruption_Type !== 'None')
-          add(byDisruption, r.Disruption_Type, delay);
-        add(byProduct, r.Product_Category||'Unknown', lead);
-
-        add(byDemand, m, r.Customer_Demand||0);
-        add(byOrder, m, r.Order_Quantity||0);
+        if (r.Disruption_Type && r.Disruption_Type.trim() !== 'None')
+          add(byDisruption, r.Disruption_Type.trim(), delay);
+        add(byProduct, r.Product_Category?.trim() || 'Unknown', lead);
+        add(byDemand, m, r.Customer_Demand || 0);
+        add(byOrder, m, r.Order_Quantity || 0);
       });
 
-      const avg = arr => arr.reduce((s,v)=>s+v,0)/arr.length;
+      const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
       const summarize = (obj, pickMax) =>
         Object.entries(obj)
-          .map(([k,v]) => [k, avg(v).toFixed(2)])
-          .sort((a,b) => pickMax ? b[1]-a[1] : a[1]-b[1]);
+          .map(([k, v]) => [k, avg(v).toFixed(2)])
+          .sort((a, b) => pickMax ? b[1] - a[1] : a[1] - b[1]);
 
       const results = [
         ['Highest Avg Lead Time (Supplier)', summarize(bySupplier, true)],
@@ -75,25 +79,27 @@
       const resDiv = document.getElementById('results');
       resDiv.innerHTML = '';
       results.forEach(([title, table]) => {
-        const card = document.createElement('div'); card.className = 'card';
+        const card = document.createElement('div');
+        card.className = 'card';
         const body = `<div class="card-body">
           <h5 class="card-title">${title}</h5>
           <div class="table-container"><table class="table table-sm">
             <thead><tr><th>Key</th><th>Avg Days</th></tr></thead><tbody>
             ${table.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}
             </tbody></table></div></div>`;
-        card.innerHTML = body; resDiv.append(card);
+        card.innerHTML = body;
+        resDiv.append(card);
       });
 
       renderCharts(byMonth, byDemand, byOrder);
     }
 
     function renderCharts(byMonth, byDemand, byOrder) {
-      const months = Object.keys(byMonth).sort((a,b)=>a-b);
+      const months = Object.keys(byMonth).sort((a, b) => a - b);
       const monthLabels = months.map(m => `M${m}`);
-      const delays = months.map(m => (byMonth[m].reduce((a,b)=>a+b,0)/byMonth[m].length).toFixed(2));
-      const demands = months.map(m => (byDemand[m].reduce((a,b)=>a+b,0)/byDemand[m].length).toFixed(2));
-      const orders = months.map(m => (byOrder[m].reduce((a,b)=>a+b,0)/byOrder[m].length).toFixed(2));
+      const delays = months.map(m => (byMonth[m].reduce((a, b) => a + b, 0) / byMonth[m].length).toFixed(2));
+      const demands = months.map(m => (byDemand[m].reduce((a, b) => a + b, 0) / byDemand[m].length).toFixed(2));
+      const orders = months.map(m => (byOrder[m].reduce((a, b) => a + b, 0) / byOrder[m].length).toFixed(2));
 
       document.getElementById('chartsSection').innerHTML = `
         <div class="card mb-4"><div class="card-body">
@@ -107,8 +113,16 @@
 
       new Chart(document.getElementById('delayChart'), {
         type: 'line',
-        data: { labels: monthLabels, datasets: [{ label:'Avg Delay (days)', data:delays, borderColor:'teal', tension:0.3 }] },
-        options: { scales:{ y:{ beginAtZero:true } } }
+        data: {
+          labels: monthLabels,
+          datasets: [{
+            label: 'Avg Delay (days)',
+            data: delays,
+            borderColor: 'teal',
+            tension: 0.3
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
       });
 
       new Chart(document.getElementById('demandChart'), {
@@ -116,14 +130,15 @@
         data: {
           labels: monthLabels,
           datasets: [
-            { label:'Customer Demand', data:demands, backgroundColor:'rgba(54,162,235,0.6)' },
-            { label:'Order Quantity', data:orders, backgroundColor:'rgba(255,159,64,0.6)' }
+            { label: 'Customer Demand', data: demands, backgroundColor: 'rgba(54,162,235,0.6)' },
+            { label: 'Order Quantity', data: orders, backgroundColor: 'rgba(255,159,64,0.6)' }
           ]
         },
-        options: { scales:{ y:{ beginAtZero:true } } }
+        options: { scales: { y: { beginAtZero: true } } }
       });
     }
   </script>
 </body>
 </html>
+
 
