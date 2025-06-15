@@ -83,7 +83,7 @@
       function distance(p) {
         let d = 0;
         for (let i = 0; i < p.length - 1; i++) {
-          d += Math.hypot(cities[p[i+1]].x - cities[p[i]].x, cities[p[i+1]].y - cities[p[i]].y);
+         d += Math.hypot(cities[p[i+1]].x - cities[p[i]].x, cities[p[i+1]].y - cities[p[i]].y);
         }
         d += Math.hypot(cities[p[0]].x - cities[p[p.length - 1]].x, cities[p[0]].y - cities[p[p.length - 1]].y);
         return d;
