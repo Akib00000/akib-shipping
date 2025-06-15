@@ -2,73 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Assignment 12 – ABC Classification & Slotting Strategy</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Generalized Slotting Strategy Tool</title>
   <style>
-    body {
-      background-color: #f9f9f9;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 20px;
+    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; background-color: #f9f9f9; }
+    h1, h2, h3 { color: #2c3e50; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; margin-top: 30px; }
+    h3 { font-size: 18px; margin-top: 20px; }
+    pre {
+      background: #eee;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
     }
-    .container {
-      background: white;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.05);
-    }
-    h1, h2 {
-      color: #007bff;
-    }
-    ul {
-      padding-left: 20px;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 40px;
-      font-size: 0.9em;
-      color: #666;
-    }
+    ul { padding-left: 20px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Assignment 12: ABC Classification & Slotting Strategy</h1>
-    <p><strong>Student:</strong> AKIB ABU SALEH MD │ <strong>ID:</strong> 2217655</p>
 
-    <h2>Design Thinking Steps</h2>
-    <h3>Empathize</h3>
-    <p>Warehouse workers and managers face congestion and inefficiencies due to unoptimized layouts. They need a better strategy to reduce travel distance and improve picking speed.</p>
+<h1>📦 Generalized Slotting Strategy Tool</h1>
 
-    <h3>Define</h3>
-    <p><strong>Problem Statement:</strong> Our warehouse layout does not reflect SKU activity levels, leading to extra travel time and delays during order picking.</p>
+<h2>🎯 Goal</h2>
+<p>Design a tool that reads a warehouse grid of pick frequency data and outputs an optimized layout with reassigned SKU locations based on frequency, proximity to dock, and obstacles.</p>
 
-    <h3>Ideate</h3>
-    <ul>
-      <li>Classify SKUs based on pick frequency (ABC classification)</li>
-      <li>Design new zones prioritizing accessibility</li>
-      <li>Apply Pareto analysis to determine which SKUs should be closer to the dock</li>
-    </ul>
+<h2>🔁 Workflow</h2>
 
-    <h3>Prototype</h3>
-    <p>Using the 5x6 warehouse grid and pick frequency data, SKUs were classified:</p>
-    <ul>
-      <li><strong>A items</strong> (Top 20% of cumulative picks) were placed closest to the dock</li>
-      <li><strong>B items</strong> (Next 30%) were placed in mid-access areas</li>
-      <li><strong>C items</strong> (Remaining 50%) were stored farthest away or in less accessible zones</li>
-    </ul>
+<h3>1. Load Frequency Grid</h3>
+<p>Read a CSV file into a 2D array (grid format) representing SKU pick frequencies.</p>
 
-    <h3>Test</h3>
-    <p>By comparing the heatmap of the initial and optimized layouts, we observed that most of the high-frequency items were now closer to the dock at (4,3), minimizing travel distance and expected congestion.</p>
+<h3>2. Flatten the Grid</h3>
+<p>Convert the grid into a flat list with each SKU's frequency and location.</p>
 
-    <h2>Results & Justification</h2>
-    <p>I performed a Pareto analysis and computed the cumulative pick frequency percentages. Based on this, I assigned ABC categories and rearranged SKU positions accordingly, avoiding the blocked cell at (2,4). This led to a more efficient layout.</p>
-    
-    <p><strong>Tools Used:</strong> Excel (CSV analysis), heatmap visualization, HTML for documentation</p>
+<h3>3. Pareto Classification</h3>
+<p>Classify SKUs into categories:</p>
+<ul>
+  <li><strong>A:</strong> Top 20%</li>
+  <li><strong>B:</strong> Next 30%</li>
+  <li><strong>C:</strong> Remaining 50%</li>
+</ul>
 
-    <p>Full documentation with updated grid and heatmap is available in the revised CSV and visual layout files.</p>
+<h3>4. Optimize Slot Assignment</h3>
+<p>Assign SKU locations based on proximity to dock and category, avoiding obstacles.</p>
 
-    <div class="footer">&copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655</div>
-  </div>
+<h2>💻 Sample Pseudocode</h2>
+<pre>
+1. Load CSV into a 2D grid
+2. Flatten to list of {sku, freq, (row, col)}
+3. Sort list by frequency
+4. Calculate cumulative percentages for Pareto
+5. Classify SKUs as A, B, or C
+6. Generate slot list sorted by Manhattan distance from dock
+7. Assign highest frequency SKUs to closest slots
+8. Output optimized 2D grid
+</pre>
+
+<h2>📤 Output</h2>
+<p>An optimized CSV grid with reassigned SKU placements based on frequency and slot priority.</p>
+
+<h2>⚙️ Example Use Cases</h2>
+<ul>
+  <li>Dynamic slotting in high-frequency eCommerce warehouses</li>
+  <li>Warehouse redesign for productivity improvement</li>
+  <li>Teaching logistics optimization using live data</li>
+</ul>
+
 </body>
 </html>
+
