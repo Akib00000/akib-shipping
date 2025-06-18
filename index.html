@@ -25,16 +25,10 @@
       background-color: rgba(0, 0, 0, 0.6);
       min-height: 100vh;
       padding: 60px 20px;
-      animation: fadeInOverlay 1s ease;
     }
 
     body.light-theme .overlay {
       background-color: rgba(255, 255, 255, 0.85);
-    }
-
-    @keyframes fadeInOverlay {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .hero {
@@ -46,13 +40,7 @@
       font-size: 3em;
       font-weight: bold;
       color: #00e0ff;
-      text-shadow: 0 0 10px #00e0ff, 0 0 20px #00e0ff;
-      animation: pulse 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-      0%, 100% { text-shadow: 0 0 10px #00e0ff, 0 0 20px #00e0ff; }
-      50% { text-shadow: 0 0 20px #00e0ff, 0 0 30px #00e0ff; }
+      text-shadow: 0 0 10px #00e0ff;
     }
 
     .hero p {
@@ -63,7 +51,6 @@
     body.light-theme .hero h1 {
       color: #007bff;
       text-shadow: none;
-      animation: none;
     }
 
     body.light-theme .hero p {
@@ -76,12 +63,6 @@
       backdrop-filter: blur(10px);
       color: white;
       transition: transform 0.3s, box-shadow 0.3s;
-      animation: fadeInCard 0.8s ease forwards;
-    }
-
-    @keyframes fadeInCard {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
     }
 
     .projects .card:hover {
@@ -92,7 +73,6 @@
     body.light-theme .projects .card {
       background: rgba(255, 255, 255, 0.9);
       color: #212529;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     .socials a {
@@ -114,6 +94,25 @@
       position: fixed;
       top: 20px;
       right: 20px;
+    }
+
+    .virtual-assistant {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .virtual-assistant img {
+      width: 100px;
+      margin-right: 20px;
+    }
+
+    .virtual-assistant .message {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px 20px;
+      border-radius: 10px;
+      backdrop-filter: blur(5px);
     }
 
     body.light-theme .btn-outline-light {
@@ -144,17 +143,117 @@
     <!-- Projects Section -->
     <div class="container projects">
       <div class="row row-cols-1 row-cols-md-3 g-4">
-        <!-- All assignment cards -->
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 2</h5><p class="card-text">Introduction to Logistics</p><a href="assignment2/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 3</h5><p class="card-text">Company Logistics Process Flowchart</p><a href="assignment3/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 4</h5><p class="card-text">Lead Time & Bullwhip Effect Analysis</p><a href="assignment4/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 5</h5><p class="card-text">TSP & Catch-up Week</p><a href="assignment5/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 6</h5><p class="card-text">Design Thinking & TSP Game</p><a href="assignment6/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 7</h5><p class="card-text">Inventory & Warehouse Heat Map</p><a href="assignment7/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 8</h5><p class="card-text">Problem Research & Learning Activity</p><a href="assignment8/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 9</h5><p class="card-text">ABC Classification and Slotting Strategy</p><a href="assignment9/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 10</h5><p class="card-text">Generalizing Slotting Strategy</p><a href="assignment10/" class="btn btn-outline-light">View</a></div></div></div>
-        <div class="col"><div class="card h-100 text-center"><div class="card-body"><h5 class="card-title">Assignment 11</h5><p class="card-text">Counterfeit Supplements</p><a href="assignment11/" class="btn btn-outline-light">View</a></div></div></div>
+
+        <!-- Assignment 2 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 2</h5>
+              <p class="card-text">Introduction to Logistics</p>
+              <a href="assignment2/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 3 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 3</h5>
+              <p class="card-text">Company Logistics Process Flowchart</p>
+              <a href="assignment3/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 4 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 4</h5>
+              <p class="card-text">Lead Time & Bullwhip Effect Analysis</p>
+              <a href="assignment4/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 5 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 5</h5>
+              <p class="card-text">TSP & Catch-up Week</p>
+              <a href="assignment5/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 6 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 6</h5>
+              <p class="card-text">Design Thinking & TSP Game</p>
+              <a href="assignment6/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 7 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 7</h5>
+              <p class="card-text">Inventory & Warehouse Heat Map</p>
+              <a href="assignment7/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 8 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 8</h5>
+              <p class="card-text">Problem Research & Learning Activity</p>
+              <a href="assignment8/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 9 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 9</h5>
+              <p class="card-text">ABC Classification and Slotting Strategy</p>
+              <a href="assignment9/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 10 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 10</h5>
+              <p class="card-text">Generalizing Slotting Strategy</p>
+              <a href="assignment10/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment 11 -->
+        <div class="col">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 11</h5>
+              <p class="card-text">Counterfeit Supplements</p>
+              <a href="assignment11/" class="btn btn-outline-light">View</a>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -172,6 +271,7 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Theme Toggle Script -->
   <script>
     const toggleThemeBtn = document.getElementById('toggleTheme');
     toggleThemeBtn.addEventListener('click', () => {
