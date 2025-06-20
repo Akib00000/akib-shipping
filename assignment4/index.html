@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Assignment 4 – Lead Time & Bullwhip Analysis</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #e9f2fb; padding: 20px; }
-    .container { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-    .result-card { margin-top: 30px; padding: 20px; border-radius: 10px; background: #f7faff; box-shadow: inset 0 0 10px rgba(0,123,255,0.05); }
+    body { font-family:'Segoe UI',sans-serif; background:#e9f2fb; padding:20px; }
+    .container { background:#fff; padding:30px; border-radius:12px; box-shadow:0 0 20px rgba(0,0,0,0.1); }
+    .result-card { margin-top:30px; padding:20px; border-radius:10px; background:#f7faff; box-shadow:inset 0 0 10px rgba(0,123,255,0.05); }
   </style>
 </head>
 <body>
   <div class="container">
     <h1 class="text-center">Assignment 4: Lead Time & Bullwhip Analysis</h1>
-    <p class="text-center">Upload your Excel file (.xlsx) and get instant analysis.</p>
-    <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
-      <input type="file" id="xlsxFile" accept=".xlsx" class="form-control w-auto" />
+    <p class="text-center">Final version with built-in diagnostics and column mapping logs!</p>
+    <div class="d-flex gap-2 justify-content-center mb-3">
+      <input type="file" id="xlsxFile" accept=".xlsx,.xls,.csv" class="form-control w-auto">
       <button class="btn btn-primary" onclick="analyze()">Analyze</button>
       <button class="btn btn-success" onclick="downloadResult()">Download Result</button>
     </div>
@@ -29,124 +29,125 @@
   <script>
     let currentOutput = "";
 
-    function normalize(str) {
-      return str ? str.toLowerCase().replace(/[\s_]+/g, "") : "";
-    }
+    function normalize(s) { return s?.toString().trim().toLowerCase().replace(/[\s_]+/g,'') || ''; }
 
     function analyze() {
-      const file = document.getElementById('xlsxFile').files[0];
-      if (!file) return alert("Please upload an Excel file!");
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
+      const f = document.getElementById('xlsxFile').files[0];
+      if (!f) return alert("Choose a file!");
+      const r = new FileReader();
+      r.onload = e => {
         try {
-          const wb = XLSX.read(e.target.result, { type: 'binary' });
-          const sheet = wb.Sheets[wb.SheetNames[0]];
-          const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-          if (!data.length) return alert("No rows found in sheet.");
-          const headers = Object.keys(data[0]);
+          const wb = XLSX.read(e.target.result, {type:'binary'});
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(ws, {defval:""}); 
+          if (!rows.length) return alert("Sheet is empty!");
+          
+          const rawHeaders = Object.keys(rows[0]);
           const map = {};
-          for (let header of headers) {
-            const key = normalize(header);
-            map[key] = header;
-          }
-          calculateResults(data, map);
-        } catch (err) {
-          alert("Error reading Excel file.");
+          rawHeaders.forEach(h => map[normalize(h)] = h);
+          console.log("Raw headers:", rawHeaders);
+          console.log("Normalized map:", map);
+
+          calculate(rows, map);
+        } catch(err) {
+          alert("Error reading file!");
+          console.error(err);
         }
       };
-      reader.readAsBinaryString(file);
+      f.name.endsWith('.csv') 
+        ? r.readAsText(f) 
+        : r.readAsBinaryString(f);
     }
 
-    function parseDate(val) {
-      if (typeof val === 'number') {
-        const d = XLSX.SSF.parse_date_code(val);
-        return d ? new Date(d.y, d.m - 1, d.d) : NaN;
-      } else {
-        const d = new Date(val);
-        return isNaN(d) ? NaN : d;
+    function parseDate(v) {
+      if (typeof v === 'number') {
+        const d = XLSX.SSF.parse_date_code(v);
+        return d ? new Date(d.y,d.m-1,d.d) : NaN;
       }
+      const d=new Date(v); return isNaN(d) ? NaN : d;
     }
 
-    function daysBetween(d1, d2) {
-      d1 = parseDate(d1);
-      d2 = parseDate(d2);
-      return (!isNaN(d1) && !isNaN(d2)) ? (d2 - d1) / (1000 * 60 * 60 * 24) : NaN;
+    function days(d1,d2) {
+      d1=parseDate(d1); d2=parseDate(d2);
+      return isNaN(d1)||isNaN(d2) ? NaN : (d2-d1)/(1000*60*60*24);
     }
 
-    function average(arr) {
-      return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : NaN;
-    }
+    function avg(a) { return a.length ? a.reduce((x,y)=>x+y)/a.length : NaN; }
 
-    function groupBy(data, keyFn, valFn) {
-      const groups = {};
-      for (const row of data) {
-        const key = typeof keyFn === 'function' ? keyFn(row) : row[keyFn];
-        const val = valFn(row);
-        if (key && !isNaN(val)) {
-          if (!groups[key]) groups[key] = [];
-          groups[key].push(val);
+    function group(rows, keyFn, valFn) {
+      const g={};
+      rows.forEach(r => {
+        const k = typeof keyFn==='function' ? keyFn(r) : r[keyFn];
+        const v = valFn(r);
+        if (k && !isNaN(v)) {
+          g[k] = g[k] || [];
+          g[k].push(v);
         }
-      }
-      return groups;
+      });
+      return g;
     }
 
-    function calculateResults(data, map) {
-      const get = (row, key) => row[map[normalize(key)]] || "";
+    function calculate(rows,map) {
+      const get = (r,k) => r[map[normalize(k)]];
 
-      const bySupplier = groupBy(data, r => r[map["supplier"]], r => daysBetween(get(r, "Order Date"), get(r, "Actual Delivery Date")));
-      const byTransport = groupBy(data, r => r[map["transportationmode"]], r => daysBetween(get(r, "Order Date"), get(r, "Actual Delivery Date")));
-      const byMonth = groupBy(data,
-        r => {
-          const d = parseDate(get(r, "Expected Delivery Date"));
-          return isNaN(d) ? null : d.toLocaleString('default', { month: 'short' });
+      const supplier = group(rows, r=>get(r,"Supplier")||"Unknown",
+        r=>days(get(r,"Order Date"), get(r,"Actual Delivery Date")));
+
+      const transport = group(rows, r=>get(r,"Transportation Mode")||"Unknown",
+        r=>days(get(r,"Order Date"), get(r,"Actual Delivery Date")));
+
+      const byMonth = group(rows,
+        r=>{
+          const d=parseDate(get(r,"Expected Delivery Date"));
+          return isNaN(d) ? null : d.toLocaleString('default',{month:'short'});
         },
-        r => daysBetween(get(r, "Expected Delivery Date"), get(r, "Actual Delivery Date"))
+        r=>days(get(r,"Expected Delivery Date"), get(r,"Actual Delivery Date"))
       );
-      const byDisruption = groupBy(data, r => r[map["disruptiontype"]], r => daysBetween(get(r, "Expected Delivery Date"), get(r, "Actual Delivery Date")));
-      const byCategory = groupBy(data, r => r[map["productcategory"]], r => daysBetween(get(r, "Order Date"), get(r, "Actual Delivery Date")));
 
-      const topSupplier = Object.entries(bySupplier).sort((a, b) => average(b[1]) - average(a[1]))[0] || ["N/A", []];
-      const bestTransport = Object.entries(byTransport).sort((a, b) => average(a[1]) - average(b[1]))[0] || ["N/A", []];
-      const worstMonth = Object.entries(byMonth).sort((a, b) => average(b[1]) - average(a[1]))[0] || ["N/A", []];
-      const worstDisrupt = Object.entries(byDisruption).filter(e => e[0] && e[0] !== "None").sort((a, b) => average(b[1]) - average(a[1]))[0] || ["N/A", []];
-      const bestCategory = Object.entries(byCategory).sort((a, b) => average(a[1]) - average(b[1]))[0] || ["N/A", []];
+      const disruptions = group(rows, r=>get(r,"Disruption Type")||"None",
+        r=>days(get(r,"Expected Delivery Date"), get(r,"Actual Delivery Date")));
+
+      const category = group(rows, r=>get(r,"Product Category")||"Unknown",
+        r=>days(get(r,"Order Date"), get(r,"Actual Delivery Date")));
+
+      console.log("Supplier data:", supplier);
+      console.log("Transport data:", transport);
+      console.log("Month:", byMonth);
+
+      const best = obj=>Object.entries(obj).sort((a,b)=>avg(b[1])-avg(a[1]))[0]||["N/A",[]];
+
+      const topSupplier = best(supplier);
+      const fastTransport = best(transport.reverse?transport:transport); // same
+      const worstMonth = best(byMonth.reverse?byMonth:byMonth);
+      const worstDisrupt = Object.entries(disruptions)
+        .filter(e=>e[0]!=="None").sort((a,b)=>avg(b[1])-avg(a[1]))[0]||["N/A",[]];
+      const bestCat = best(category);
 
       currentOutput = `
-Supplier with Highest Avg Lead Time: ${topSupplier[0]} — ${average(topSupplier[1]).toFixed(2)} days
-Fastest Transport Mode: ${bestTransport[0]} — ${average(bestTransport[1]).toFixed(2)} days
-Month with Highest Avg Delay: ${worstMonth[0]} — ${average(worstMonth[1]).toFixed(2)} days
-Worst Disruption Type: ${worstDisrupt[0]} — ${average(worstDisrupt[1]).toFixed(2)} days
-Best Product Category: ${bestCategory[0]} — ${average(bestCategory[1]).toFixed(2)} days`;
+Supplier w/ Highest Avg Lead Time: ${topSupplier[0]} — ${avg(topSupplier[1]).toFixed(2)} days
+Fastest Transport Mode: ${fastTransport[0]} — ${avg(fastTransport[1]).toFixed(2)} days
+Month w/ Highest Avg Delay: ${worstMonth[0]} — ${avg(worstMonth[1]).toFixed(2)} days
+Worst Disruption Type: ${worstDisrupt[0]} — ${avg(worstDisrupt[1]).toFixed(2)} days
+Best Product Category: ${bestCat[0]} — ${avg(bestCat[1]).toFixed(2)} days`;
 
       document.getElementById("results").innerHTML = `
-        <div class="result-card">
-          <h2>📊 Analysis Results</h2>
-          <pre>${currentOutput}</pre>
-        </div>`;
-      renderChart(byMonth);
+        <div class="result-card"><h2>📊 Analysis Results</h2><pre>${currentOutput}</pre></div>`;
+      chart(byMonth);
     }
 
-    function renderChart(grouped) {
+    function chart(grouped) {
       const ctx = document.getElementById('delayChart').getContext('2d');
       const labels = Object.keys(grouped);
-      const values = labels.map(l => average(grouped[l]).toFixed(2));
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{ label: 'Avg Delay by Month', data: values, backgroundColor: 'rgba(0,123,255,0.6)' }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-      });
+      const values = labels.map(l=> (grouped[l].length ? avg(grouped[l]).toFixed(2) : 0));
+      new Chart(ctx, {type:'bar', data:{labels, datasets:[{label:'Avg Delay by Month', data:values, backgroundColor:'rgba(0,123,255,0.6)'}]}, options:{responsive:true, plugins:{legend:{display:false}}}});
     }
 
     function downloadResult() {
-      if (!currentOutput) return alert("No result to download yet.");
-      const blob = new Blob([currentOutput], { type: 'text/plain' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = "analysis_result.txt";
+      if (!currentOutput) return alert("No analysis to download!");
+      const blob = new Blob([currentOutput],{type:'text/plain'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download="result.txt";
       a.click();
     }
   </script>
