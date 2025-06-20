@@ -4,19 +4,29 @@
   <meta charset="UTF-8">
   <title>Akib Shipping Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjUlEQVQ4jZXTTytEURwH8M+9KR3HokVBsVAwt7FFxYgKQQQVG7E2Egmw0FYKJBBkczNU9wU7FQFiyErG7RFEdHbaFdU9lS81H+57sJ/ZhMuc8b7z7/M+995xr8cy5OYyt6cYznfM49LpjA2cZfV4L5VZVe3Wy5Zrm7uEfGrVeC0XCzUvVp2gdePKk3RyI1q7wVY53C0Dtx+0hFbkgSru2u0Z42vINR5Ywrs43gqpElVFaWFDvRA3rFZ8k7HVBa6b3N1T6+tu5KRMjEcY9NcDHKowvDRxnhbh4O2ECMGTAJr5K4is4DY5A1yyRZ+m3EjNHPm+yCFKnbUdz3GS+z5B3s5HYvVqM8Se6pAQ4BbX38AxhIP9hM5fwK+G+xgcmFrGryOY2xDa6jZheS7hvOUekENR9aWAAAAAElFTkSuQmCC">
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <!-- Embedded Favicon -->
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQC...">
   <style>
-    body { transition: background-color 0.5s ease, color 0.5s ease; }
-    .dark-mode { background-color: #121212; color: #f8f9fa; }
-    .sidebar { min-height: 100vh; background-color: #007bff; color: white; padding: 20px; }
-    .sidebar h2 { font-size: 1.5rem; color: #fff; }
+    body { transition: background-color .5s, color .5s; }
+    .dark-mode { background: #121212; color: #f8f9fa; }
+    .sidebar { min-height: 100vh; background: #007bff; color: white; padding: 20px; }
+    .sidebar h2 { font-size: 1.5rem; margin-top: 1rem; color: #fff; }
     .sidebar a { color: #fff; display: block; margin: 10px 0; text-decoration: none; }
     .sidebar a:hover { text-decoration: underline; }
-    .navbar { background-color: #f8f9fa; }
-    .navbar.dark-mode { background-color: #1f1f1f; }
-    .card { transition: transform 0.3s, box-shadow 0.3s; }
-    .card:hover { transform: scale(1.03); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .navbar { background: #f8f9fa; }
+    .navbar.dark-mode { background: #1f1f1f; }
+    .card:hover { transform: scale(1.03); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .slot-tool { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); margin-top: 20px; }
+    .a { background-color: #28a745; color: white; }
+    .b { background-color: #ffc107; }
+    .c { background-color: #dc3545; color: white; }
+    table, th, td { border: 1px solid #ccc; border-collapse: collapse; }
+    th, td { padding: 8px 12px; text-align: center; }
+    th { background-color: #007bff; color: white; }
   </style>
 </head>
 <body>
@@ -25,48 +35,111 @@
       <!-- Sidebar -->
       <nav class="col-md-2 sidebar">
         <h2>AKIB SHIPPING</h2>
-        <p>Portfolio Dashboard</p>
-        <a href="#">Home</a>
+        <a href="#home">Home</a>
         <a href="#projects">Projects</a>
-        <a href="#contact">Contact</a>
       </nav>
 
       <!-- Main Content -->
       <main class="col-md-10">
         <nav class="navbar d-flex justify-content-between align-items-center px-3">
-          <h3 class="mb-0">Assignments</h3>
+          <h3 class="mb-0" id="home">Dashboard</h3>
           <button class="btn btn-outline-dark" onclick="toggleTheme()">Toggle Theme</button>
         </nav>
 
+        <!-- Projects Grid -->
         <div class="container py-4" id="projects">
           <div class="row row-cols-1 row-cols-md-3 g-4">
-            ${[...Array(12).keys()].map(i => `
+            <!-- Assignment Cards -->
             <div class="col">
               <div class="card h-100 text-center p-3">
-                <h5 class="card-title">Assignment ${i + 1}</h5>
-                <p class="card-text">${i === 10 ? 'ABC_SLOTTING_TOOL' : i === 11 ? 'Counterfeit Supplements' : 'Project Summary'}</p>
-                <a href="assignment${i + 1}/" class="btn btn-primary">View</a>
+                <h5 class="card-title">Assignment 11</h5>
+                <p class="card-text">ABC Slotting Tool</p>
+                <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#tool" aria-expanded="false">Open Tool</button>
               </div>
             </div>
-            `).join('')}
+            <!-- Repeat for other assignments as needed -->
           </div>
         </div>
 
-        <footer class="text-center mt-5" id="contact">
-          <p>Connect: 
-            <a href="https://github.com/Akib00000" target="_blank">GitHub</a> | 
-            <a href="mailto:akibrahman1000@gmail.com">Email</a>
-          </p>
+        <!-- Embedded Tool Section -->
+        <div id="tool" class="collapse slot-tool">
+          <h2>ABC Classification Slotting Tool</h2>
+          <input type="file" id="csvFile" accept=".csv" class="form-control mb-2"/>
+          <button class="btn btn-success mb-4" onclick="processCSV()">Upload & Process</button>
+          <div id="abcTable"></div>
+          <div id="optimizedGrid" class="grid"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-5 mb-5">
+          <p>Connect: <a href="https://github.com/Akib00000" target="_blank">GitHub</a> | <a href="mailto:akibrahman1000@gmail.com">Email</a></p>
           <p>&copy; 2025 AKIB SHIPPING</p>
         </footer>
       </main>
     </div>
   </div>
 
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Slotting Tool JavaScript -->
   <script>
     function toggleTheme() {
       document.body.classList.toggle('dark-mode');
       document.querySelector('.navbar').classList.toggle('dark-mode');
+    }
+
+    let rows = 0, cols = 0;
+
+    function manhattan(a, b) {
+      return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+    }
+
+    function processCSV() {
+      const file = document.getElementById('csvFile').files[0];
+      if (!file) return alert('Please upload a CSV file first.');
+
+      Papa.parse(file, {
+        complete: function(results) {
+          const data = results.data.filter(r => r.some(c => c.trim() !== '')).map(r => r.map(Number));
+          rows = data.length;
+          cols = data[0].length;
+
+          const skus = [], total = data.flat().reduce((s,v)=>s+v,0);
+          data.flatMap((row,r) => row.map((freq,c) => skus.push({sku:`SKU${r*cols+c}`,freq,pos:[r,c]})));
+
+          skus.sort((a,b)=>b.freq-a.freq);
+          let cum=0;
+          skus.forEach(sku=>{
+            cum+=sku.freq;
+            sku.cumulative = (cum/total*100).toFixed(2);
+            sku.class = cum/total <= 0.2 ? 'A' : cum/total <= 0.5 ? 'B' : 'C';
+          });
+
+          displayABCTable(skus);
+          assignToGrid(skus);
+        }
+      });
+    }
+
+    function displayABCTable(skus) {
+      let html = '<h4>ABC Classification Table</h4><table><tr><th>SKU</th><th>Freq</th><th>Cumul %</th><th>Class</th></tr>';
+      skus.forEach(s=>html+=`<tr><td>${s.sku}</td><td>${s.freq}</td><td>${s.cumulative}</td><td class="${s.class.toLowerCase()}">${s.class}</td></tr>`);
+      document.getElementById('abcTable').innerHTML = html + '</table>';
+    }
+
+    function assignToGrid(skus) {
+      const dock = [0,0];
+      const positions = Array.from({length:rows*cols},(_,i)=>({pos:[Math.floor(i/cols),i%cols],dist:0}))
+                         .map(p=>({pos:p.pos,dist:manhattan(p.pos,dock)}))
+                         .sort((a,b)=>a.dist-b.dist);
+
+      const newGrid = Array.from({length:rows},()=>Array(cols).fill(''));
+      skus.forEach((s,i)=> newGrid[positions[i].pos[0]][positions[i].pos[1]] = `<td class="${s.class.toLowerCase()}">${s.sku}</td>`);
+
+      let html = '<h4>Optimized Layout Grid</h4><table>';
+      newGrid.forEach(r=>html+=`<tr>${r.join('')}</tr>`);
+      document.getElementById('optimizedGrid').innerHTML = html + '</table>';
     }
   </script>
 </body>
