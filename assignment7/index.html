@@ -8,27 +8,61 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f9fbfc;
+      background: linear-gradient(to right, #f2f4f8, #e6f0ff);
       padding: 30px;
     }
     .container {
-      background: #fff;
+      background: #ffffff;
       padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     }
-    h1, h2 {
-      color: #007bff;
-      margin-top: 20px;
+    h1 {
+      background: linear-gradient(90deg, #007bff, #6610f2);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h2 {
+      color: #343a40;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 6px;
+      margin-top: 30px;
     }
     ul {
       padding-left: 20px;
+      line-height: 1.8;
+    }
+    li::marker {
+      color: #007bff;
     }
     .footer {
       text-align: center;
-      margin-top: 40px;
+      margin-top: 50px;
       font-size: 0.9rem;
       color: #6c757d;
+    }
+    p strong {
+      color: #495057;
+    }
+    .section-card {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 15px;
+      transition: 0.3s ease;
+    }
+    .section-card:hover {
+      background-color: #e2e6ea;
+    }
+    .heatmap td {
+      background-color: #d1e7dd;
+      font-weight: bold;
+    }
+    .heatmap td[data-value] {
+      background-color: hsl(150, 50%, calc(100% - (var(--intensity) * 0.7%)));
     }
   </style>
 </head>
@@ -38,28 +72,92 @@
     <p><strong>Student:</strong> AKIB ABU SALEH MD<br><strong>ID:</strong> 2217655</p>
 
     <h2>0. Position Reference</h2>
-    <p>(Aisles run left → right 1–6 | Levels run bottom → top 1–4)</p>
+    <div class="section-card">
+      <p>(Aisles run left → right 1–6 | Levels run bottom → top 1–4)</p>
+    </div>
+
+    <h2>Warehouse Pick-Frequency Grid (Heat Map)</h2>
+    <div class="section-card">
+      <p><strong>Legend:</strong> Darker cells = Higher pick frequency</p>
+      <table class="table table-bordered text-center heatmap">
+        <thead class="table-primary">
+          <tr>
+            <th>Level ↓ / Aisle →</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>4</th>
+            <td style="--intensity:60">60</td>
+            <td style="--intensity:85">85</td>
+            <td style="--intensity:70">70</td>
+            <td style="--intensity:18">18</td>
+            <td style="--intensity:90">90</td>
+            <td style="--intensity:22">22</td>
+          </tr>
+          <tr>
+            <th>3</th>
+            <td style="--intensity:25">25</td>
+            <td style="--intensity:40">40</td>
+            <td style="--intensity:32">32</td>
+            <td style="--intensity:9">9</td>
+            <td style="--intensity:60">60</td>
+            <td style="--intensity:15">15</td>
+          </tr>
+          <tr>
+            <th>2</th>
+            <td style="--intensity:12">12</td>
+            <td style="--intensity:15">15</td>
+            <td style="--intensity:13">13</td>
+            <td style="--intensity:5">5</td>
+            <td style="--intensity:38">38</td>
+            <td style="--intensity:8">8</td>
+          </tr>
+          <tr>
+            <th>1</th>
+            <td style="--intensity:7">7</td>
+            <td style="--intensity:9">9</td>
+            <td style="--intensity:8">8</td>
+            <td style="--intensity:2">2</td>
+            <td style="--intensity:24">24</td>
+            <td style="--intensity:3">3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <h2>1. Observations (Patterns, Anomalies, Gradients)</h2>
-    <ul>
-      <li>Aisle 5 consistently exhibits the highest pick frequencies, especially at Level 4 (value: 90), indicating it's the most accessed aisle.</li>
-      <li>Level 1 has generally low values across all aisles (e.g., Aisle 1 = 7, Aisle 4 = 2), suggesting low activity or poor access at the bottom levels.</li>
-      <li>Aisle 4 shows significantly lower numbers (e.g., Level 1 = 2, Level 2 = 5, Level 3 = 9, Level 4 = 18), indicating potential bottlenecks or avoidance.</li>
-    </ul>
+    <div class="section-card">
+      <ul>
+        <li>Aisle 5 consistently exhibits the highest pick frequencies, especially at Level 4 (value: 90), indicating it's the most accessed aisle.</li>
+        <li>Level 1 has generally low values across all aisles (e.g., Aisle 1 = 7, Aisle 4 = 2), suggesting low activity or poor access at the bottom levels.</li>
+        <li>Aisle 4 shows significantly lower numbers (e.g., Level 1 = 2, Level 2 = 5, Level 3 = 9, Level 4 = 18), indicating potential bottlenecks or avoidance.</li>
+      </ul>
+    </div>
 
     <h2>2. Operational Reasons</h2>
-    <ul>
-      <li><strong>High demand products in Aisle 5:</strong> This aisle likely contains fast-moving SKUs positioned close to outbound areas.</li>
-      <li><strong>Low picks in Level 1:</strong> Ergonomic challenges discourage frequent bending, making upper levels preferable.</li>
-      <li><strong>Aisle 4 underperformance:</strong> May result from narrow layout, structural hindrances, or placement of low-priority items.</li>
-    </ul>
+    <div class="section-card">
+      <ul>
+        <li><strong>High demand products in Aisle 5:</strong> This aisle likely contains fast-moving SKUs positioned close to outbound areas.</li>
+        <li><strong>Low picks in Level 1:</strong> Ergonomic challenges discourage frequent bending, making upper levels preferable.</li>
+        <li><strong>Aisle 4 underperformance:</strong> May result from narrow layout, structural hindrances, or placement of low-priority items.</li>
+      </ul>
+    </div>
 
     <h2>3. Expanded Insights</h2>
-    <ul>
-      <li><strong>Accessibility Bias:</strong> Workers may avoid less convenient zones such as Level 1 or crowded Aisle 4.</li>
-      <li><strong>Zoning Strategy:</strong> Warehouse may use ABC classification—placing 'A' class inventory in Aisle 5 and 'C' in Aisles 1, 2, and 4.</li>
-      <li><strong>Physical Constraints:</strong> Obstructions like pallets or staging areas in Aisle 4 might reduce picking efficiency there.</li>
-    </ul>
+    <div class="section-card">
+      <ul>
+        <li><strong>Accessibility Bias:</strong> Workers may avoid less convenient zones such as Level 1 or crowded Aisle 4.</li>
+        <li><strong>Zoning Strategy:</strong> Warehouse may use ABC classification—placing 'A' class inventory in Aisle 5 and 'C' in Aisles 1, 2, and 4.</li>
+        <li><strong>Physical Constraints:</strong> Obstructions like pallets or staging areas in Aisle 4 might reduce picking efficiency there.</li>
+      </ul>
+    </div>
 
     <div class="footer">
       &copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655
