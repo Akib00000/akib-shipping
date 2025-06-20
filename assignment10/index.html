@@ -2,44 +2,132 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Week 12 – Slotting Strategy Tool</title>
+  <title>Week 12 – Generalized Slotting Strategy Tool</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f2f7ff; padding: 30px; }
-    .container { background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h1, h2 { color: #007bff; }
-    table { margin-top: 20px; }
-    .footer { margin-top: 40px; text-align: center; color: #888; }
+    body { font-family: 'Segoe UI', sans-serif; background: #eef4fb; padding: 30px; }
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      max-width: 950px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #0d6efd;
+      border-bottom: 2px solid #dee2e6;
+      padding-bottom: 5px;
+    }
+    h3 { color: #495057; margin-top: 20px; }
+    ul, ol { padding-left: 1.2rem; }
+    pre {
+      background: #f8f9fa;
+      border-left: 5px solid #0d6efd;
+      padding: 15px;
+      font-size: 14px;
+      overflow-x: auto;
+    }
+    code { font-family: Consolas, monospace; }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #6c757d;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Week 12 – Generalizing Slotting Strategy Tool</h1>
-    <p><strong>Student:</strong> AKIB ABU SALEH MD<br><strong>ID:</strong> 2217655</p>
+    <h1 class="text-center">Generalized Slotting Strategy Tool</h1>
+    <p class="text-end"><strong>Student:</strong> AKIB ABU SALEH MD<br><strong>ID:</strong> 2217655</p>
 
     <h2>Assignment Goal</h2>
-    <p>Design a slotting strategy that generalizes warehouse layout logic using a CSV grid of frequency data. SKUs should be sorted by pick frequency and assigned according to ABC classification (A = 20%, B = 30%, C = 50%).</p>
+    <p>
+      Design a flexible tool to generate optimized warehouse slotting layouts from CSV-based pick-frequency data. The tool should classify SKUs using ABC logic (default: A = 20%, B = 30%, C = 50%) and assign them to optimal positions relative to a dock location.
+    </p>
 
-    <h2>Process Description</h2>
+    <h2>Problem Assumptions</h2>
+    <ul>
+      <li>The input is a CSV grid of pick frequency data (any number of rows and columns).</li>
+      <li>SKU identifiers follow row-wise order (SKU0 = [0,0], SKU1 = [0,1], ...).</li>
+      <li>The dock location is user-defined (default: top-left corner at [0,0]).</li>
+      <li>Obstacles (optional) are identified by their grid positions.</li>
+      <li>Users can adjust ABC thresholds if needed (e.g., A=25%, B=35%, C=40%).</li>
+    </ul>
+
+    <h2>Tool Logic</h2>
     <ol>
-      <li><strong>Step 1:</strong> Load CSV file and parse pick frequency data.</li>
-      <li><strong>Step 2:</strong> Flatten the matrix row-wise to match SKUs (SKU0 = [0,0], SKU1 = [0,1], etc.).</li>
-      <li><strong>Step 3:</strong> Sort SKUs by pick frequency and assign ABC classes:
-        <ul>
-          <li><strong>A:</strong> Top 20% of SKUs</li>
-          <li><strong>B:</strong> Next 30%</li>
-          <li><strong>C:</strong> Bottom 50%</li>
-        </ul>
-      </li>
-      <li><strong>Step 4:</strong> Generate a new grid that places high-frequency SKUs closest to the dock (assumed at top-left).</li>
+      <li><strong>Step 1:</strong> Load and parse CSV frequency grid.</li>
+      <li><strong>Step 2:</strong> Flatten the grid to a list of SKUs with frequencies and positions.</li>
+      <li><strong>Step 3:</strong> Perform Pareto analysis and assign ABC classes based on cumulative pick frequencies.</li>
+      <li><strong>Step 4:</strong> Rank available locations by proximity to the dock (excluding obstacles).</li>
+      <li><strong>Step 5:</strong> Assign A-class SKUs to the closest open locations, followed by B, then C.</li>
     </ol>
 
-    <h2>Reflection</h2>
-    <p>This task helped me understand how warehouse slotting strategies optimize operational efficiency by minimizing walking time for high-frequency SKUs. I learned to process grid-based frequency data and apply logic for spatial optimization in logistics design.</p>
+    <h2>Expected Output</h2>
+    <ul>
+      <li>Updated CSV file with optimized SKU-to-location mapping.</li>
+      <li>Visual grid or table of the new warehouse layout.</li>
+      <li>Heatmap or legend distinguishing A, B, and C class zones.</li>
+      <li>Downloadable report summarizing the ABC classification logic and grid transformation.</li>
+    </ul>
 
-    <h2>Output</h2>
-    <p>Full documentation, heatmaps, and updated grid CSV have been attached separately as per the assignment's submission guidelines.</p>
+    <h2>Reflection</h2>
+    <p>
+      Building a general slotting strategy taught me how algorithms can reduce physical effort in warehouse operations. I applied data sorting and classification techniques to optimize layout planning, helping improve logistics flow and productivity.
+    </p>
+
+    <h2>Bonus – Python Slotting Tool</h2>
+    <p>
+      Below is a Python script that implements the full slotting strategy. It supports flexible grid sizes, user-defined dock and obstacles, and outputs an optimized layout and classification report.
+    </p>
+
+    <pre><code>
+import pandas as pd
+import numpy as np
+
+def slot_warehouse(filename, dock=(0,0), obstacles=[], a_pct=0.2, b_pct=0.3, c_pct=0.5):
+    df = pd.read_csv(filename, header=None)
+    rows, cols = df.shape
+
+    skus = []
+    for r in range(rows):
+        for c in range(cols):
+            sku = {'SKU': f'SKU{r*cols + c}', 'Frequency': df.iat[r, c], 'OriginalPos': (r, c)}
+            skus.append(sku)
+
+    sku_df = pd.DataFrame(skus)
+    sku_df = sku_df.sort_values(by='Frequency', ascending=False).reset_index(drop=True)
+    sku_df['Cumulative'] = sku_df['Frequency'].cumsum()
+    sku_df['Cumulative %'] = sku_df['Cumulative'] / sku_df['Frequency'].sum()
+
+    def assign_class(pct):
+        if pct <= a_pct:
+            return 'A'
+        elif pct <= a_pct + b_pct:
+            return 'B'
+        else:
+            return 'C'
+
+    sku_df['ABC'] = sku_df['Cumulative %'].apply(assign_class)
+
+    def manhattan(p1, p2):
+        return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+
+    positions = [(r, c) for r in range(rows) for c in range(cols) if (r, c) not in obstacles]
+    positions.sort(key=lambda x: manhattan(x, dock))
+
+    sku_df['NewPos'] = positions[:len(sku_df)]
+
+    result_grid = [["" for _ in range(cols)] for _ in range(rows)]
+    for _, row in sku_df.iterrows():
+        r, c = row['NewPos']
+        result_grid[r][c] = row['SKU']
+
+    return pd.DataFrame(result_grid), sku_df
+    </code></pre>
 
     <div class="footer">
       &copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655
@@ -47,4 +135,3 @@
   </div>
 </body>
 </html>
-
