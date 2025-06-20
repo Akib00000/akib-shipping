@@ -1,33 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Akib Shipping Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>AKIB Shipping Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
   <!-- PapaParse for CSV parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <!-- Embedded Favicon -->
-  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAKUlEQVR4AWP4//8/Azbw//79xOEQEUL3GhoCYiuGrg2B0mCppi5QZAMBtzBCPrxZOQAAAABJRU5ErkJggg==">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAKUlEQVR4AWP4//8/Azbw//79xOEQEUL3GhoCYiuGrg2B0mCppi5QZAMBtzBCPrxZOQAAAABJRU5ErkJggg==" />
+
   <style>
-    body { transition: background-color .5s, color .5s; padding: 0; margin: 0;}
-    .dark-mode { background: #121212; color: #f8f9fa; }
-    .sidebar { min-height: 100vh; background: #007bff; color: white; padding: 20px; position: fixed; width: 220px; }
-    .sidebar h2 { font-size: 1.5rem; margin: 0 0 20px; }
-    .sidebar a { color: #fff; display: block; margin: 10px 0; text-decoration: none; }
+    body { margin: 0; font-family: Arial, sans-serif; transition: background 0.5s, color 0.5s; }
+    .sidebar { background: #0069d9; width: 230px; height: 100vh; position: fixed; color: white; padding: 30px 20px; }
+    .sidebar h2 { margin-bottom: 1.5rem; font-size: 1.8rem; }
+    .sidebar a { color: #f1f1f1; text-decoration: none; display: block; margin-bottom: 0.8rem; }
     .sidebar a:hover { text-decoration: underline; }
-    .main { margin-left: 240px; padding: 20px; }
-    .navbar { background: #f8f9fa; }
-    .navbar.dark-mode { background: #1f1f1f; }
-    .card:hover { transform: scale(1.03); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-    .slot-tool { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); margin-top: 20px; }
+    .main-content { margin-left: 230px; padding: 30px; min-height: 100vh; background: #f4f7fa; }
+    .navbar { background: #fff; padding: 10px 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-radius: 8px; }
+    .btn-theme { background: transparent; border: 1px solid #333; }
+    .card { transition: 0.3s; }
+    .card:hover { transform: scale(1.02); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2.section-title { margin-top: 2rem; margin-bottom: 1rem; font-size: 1.6rem; }
+    .slot-tool { background: #fff; padding: 25px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
     .a { background-color: #28a745; color: white; }
-    .b { background-color: #ffc107; }
+    .b { background-color: #ffc107; color: white; }
     .c { background-color: #dc3545; color: white; }
-    table, th, td { border: 1px solid #ccc; border-collapse: collapse; }
-    th, td { padding: 8px 12px; text-align: center; }
-    th { background-color: #007bff; color: white; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    th { background-color: #0069d9; color: #fff; }
+    body.dark-mode { background: #181a1b; color: #e8e8e8; }
+    body.dark-mode .main-content { background: #242526; }
+    body.dark-mode .navbar { background: #2c2e2f; }
+    body.dark-mode .slot-tool { background: #2c2e2f; color: #e8e8e8; }
   </style>
 </head>
 <body>
@@ -35,107 +44,132 @@
     <h2>AKIB SHIPPING</h2>
     <a href="#dashboard">Dashboard</a>
     <a href="#slotting">ABC Slotting Tool</a>
-    <!-- Add other links later -->
   </div>
-  <main class="main">
-    <nav class="navbar d-flex justify-content-between align-items-center px-3">
-      <h3 id="dashboard">Portfolio Dashboard</h3>
-      <button class="btn btn-outline-dark" onclick="toggleTheme()">Toggle Theme</button>
+
+  <div class="main-content">
+    <nav class="navbar d-flex justify-content-between align-items-center mb-4">
+      <h1 id="dashboard">Portfolio Dashboard</h1>
+      <button onclick="toggleTheme()" class="btn btn-theme">
+        <span id="theme-label">Dark Mode</span>
+      </button>
     </nav>
 
-    <section id="projects" class="py-4">
-      <h4>Assignments</h4>
+    <section id="projects">
+      <h2 class="section-title">Assignments</h2>
       <div class="row row-cols-1 row-cols-md-3 g-4">
         <div class="col">
-          <div class="card h-100 text-center p-3">
-            <h5 class="card-title">Assignment 11</h5>
-            <p class="card-text">ABC Slotting Tool</p>
-            <button
-              class="btn btn-primary"
-              onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">
-              Open Tool
-            </button>
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="card-title">Assignment 11</h5>
+              <p class="card-text">ABC Slotting Tool</p>
+              <button class="btn btn-primary" onclick="onOpenTool()">Open Tool</button>
+            </div>
           </div>
         </div>
-        <!-- Additional assignment cards can be added here -->
+        <!-- Add more assignment cards here -->
       </div>
     </section>
 
-    <section id="tool" class="slot-tool">
-      <h2>ABC Classification Slotting Tool</h2>
-      <input type="file" id="csvFile" accept=".csv" class="form-control mb-2" />
-      <button class="btn btn-success mb-4" onclick="processCSV()">Upload & Process</button>
-      <div id="abcTable"></div>
-      <div id="optimizedGrid"></div>
+    <section id="slotting">
+      <h2 class="section-title">ABC Slotting Tool</h2>
+      <div class="slot-tool">
+        <label class="form-label">Upload CSV (pick frequencies grid):</label>
+        <input type="file" id="csvFile" accept=".csv" class="form-control mb-3" />
+        <button class="btn btn-success mb-4" onclick="processCSV()">Process CSV</button>
+        <div id="abcTable"></div>
+        <div id="optimizedGrid"></div>
+      </div>
     </section>
 
-    <footer class="text-center mt-5 mb-5">
-      <p>Connect: <a href="https://github.com/Akib00000" target="_blank">GitHub</a> | 
-      <a href="mailto:akibrahman1000@gmail.com">Email</a></p>
+    <footer class="text-center mt-5">
+      <hr />
+      <p>Connect with me: <a href="https://github.com/Akib00000" target="_blank">GitHub</a> | <a href="mailto:akibrahman1000@gmail.com">Email</a></p>
       <p>&copy; 2025 AKIB SHIPPING</p>
     </footer>
-  </main>
+  </div>
 
-  <!-- Bootstrap JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     function toggleTheme() {
       document.body.classList.toggle('dark-mode');
-      document.querySelector('.navbar').classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      document.getElementById('theme-label').innerText = isDark ? 'Light Mode' : 'Dark Mode';
+    }
+
+    function onOpenTool() {
+      document.getElementById('slotting').scrollIntoView({ behavior: 'smooth' });
     }
 
     let rows = 0, cols = 0;
-    function manhattan(a, b) { return Math.abs(a[0]-b[0]) + Math.abs(a[1]-b[1]); }
+
+    function manhattan(a, b) {
+      return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+    }
 
     function processCSV() {
       const file = document.getElementById('csvFile').files[0];
       if (!file) return alert('Please upload a CSV file first.');
-      Papa.parse(file, { complete: results => {
-        const data = results.data
-                      .filter(r => r.some(c => c.trim() !== ''))
-                      .map(r => r.map(Number));
-        rows = data.length; cols = data[0].length;
 
-        const skus = [];
-        data.forEach((row, r) => row.forEach((val, c) => {
-          skus.push({ sku: `SKU${r*cols + c}`, freq: val, pos: [r, c] });
-        }));
+      Papa.parse(file, {
+        complete: results => {
+          const data = results.data
+            .filter(r => r.some(c => c.trim() !== ''))
+            .map(r => r.map(Number));
+          rows = data.length;
+          cols = data[0].length;
 
-        skus.sort((a, b) => b.freq - a.freq);
-        const total = skus.reduce((s, x) => s + x.freq, 0);
-        let cum = 0;
-        skus.forEach(s => {
-          cum += s.freq;
-          s.cumulative = (cum / total * 100).toFixed(2);
-          s.class = cum / total <= 0.2 ? 'A' : cum / total <= 0.5 ? 'B' : 'C';
-        });
+          const skus = [];
+          data.forEach((row,r) =>
+            row.forEach((val,c) =>
+              skus.push({ sku: `SKU${r*cols+c}`, freq: val, pos: [r,c] })
+            )
+          );
 
-        displayABCTable(skus);
-        assignToGrid(skus);
-      }});
+          skus.sort((a,b) => b.freq - a.freq);
+          const total = skus.reduce((sum,x) => sum + x.freq, 0);
+          let cum = 0;
+          skus.forEach(s => {
+            cum += s.freq;
+            s.cumulative = (cum / total * 100).toFixed(2);
+            s.class = cum / total <= 0.2 ? 'A' : cum / total <= 0.5 ? 'B' : 'C';
+          });
+
+          displayABCTable(skus);
+          assignToGrid(skus);
+        }
+      });
     }
 
     function displayABCTable(skus) {
-      let html = '<h4>ABC Classification Table</h4><table><tr><th>SKU</th><th>Freq</th><th>Cumul %</th><th>Class</th></tr>';
-      skus.forEach(s => html += `<tr><td>${s.sku}</td><td>${s.freq}</td><td>${s.cumulative}</td><td class="${s.class.toLowerCase()}">${s.class}</td></tr>`);
-      document.getElementById('abcTable').innerHTML = html + '</table>';
+      let html = `<table><tr><th>SKU</th><th>Frequency</th><th>Cumulative %</th><th>Class</th></tr>`;
+      skus.forEach(s => {
+        html += `<tr><td>${s.sku}</td><td>${s.freq}</td><td>${s.cumulative}</td><td class="${s.class.toLowerCase()}">${s.class}</td></tr>`;
+      });
+      html += '</table>';
+      document.getElementById('abcTable').innerHTML = html;
     }
 
     function assignToGrid(skus) {
       const dock = [0, 0];
-      const positions = Array.from({length: rows*cols}, (_, i) => ({
-        pos: [Math.floor(i / cols), i % cols],
+      const positions = Array.from({length:rows*cols}, (_,i) => ({
+        pos: [Math.floor(i/cols), i%cols],
         dist: 0
-      })).map(p => ({ pos: p.pos, dist: manhattan(p.pos, dock) }))
-        .sort((a, b) => a.dist - b.dist);
+      })).map(p => ({pos:p.pos, dist:manhattan(p.pos, dock)}))
+        .sort((a,b) => a.dist - b.dist);
 
-      const newGrid = Array.from({ length: rows }, () => Array(cols).fill(''));
-      skus.forEach((s, i) => newGrid[positions[i].pos[0]][positions[i].pos[1]] = `<td class="${s.class.toLowerCase()}">${s.sku}</td>`);
+      const grid = Array.from({length:rows}, () => Array(cols).fill(''));
+      skus.forEach((s,i) => {
+        const [r,c] = positions[i].pos;
+        grid[r][c] = `<td class="${s.class.toLowerCase()}">${s.sku}</td>`;
+      });
 
-      let html = '<h4>Optimized Layout Grid</h4><table>';
-      newGrid.forEach(r => html += `<tr>${r.join('')}</tr>`);
-      document.getElementById('optimizedGrid').innerHTML = html + '</table>';
+      let html = `<table class="mt-4">`;
+      grid.forEach(row => html += `<tr>${row.join('')}</tr>`);
+      html += '</table>';
+      document.getElementById('optimizedGrid').innerHTML = html;
     }
   </script>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
