@@ -2,111 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ABC Slotting Tool</title>
-  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjUlEQVQ4jZXTTytEURwH8M+9KR3HokVBsVAwt7FFxYgKQQQVG7E2Egmw0FYKJBBkczNU9wU7FQFiyErG7RFEdHbaFdU9lS81H+57sJ/ZhMuc8b7z7/M+995xr8cy5OYyt6cYznfM49LpjA2cZfV4L5VZVe3Wy5Zrm7uEfGrVeC0XCzUvVp2gdePKk3RyI1q7wVY53C0Dtx+0hFbkgSru2u0Z42vINR5Ywrs43gqpElVFaWFDvRA3rFZ8k7HVBa6b3N1T6+tu5KRMjEcY9NcDHKowvDRxnhbh4O2ECMGTAJr5K4is4DY5A1yyRZ+m3EjNHPm+yCFKnbUdz3GS+z5B3s5HYvVqM8Se6pAQ4BbX38AxhIP9hM5fwK+G+xgcmFrGryOY2xDa6jZheS7hvOUekENR9aWAAAAAElFTkSuQmCC">
-
+  <title>Akib Shipping Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjUlEQVQ4jZXTTytEURwH8M+9KR3HokVBsVAwt7FFxYgKQQQVG7E2Egmw0FYKJBBkczNU9wU7FQFiyErG7RFEdHbaFdU9lS81H+57sJ/ZhMuc8b7z7/M+995xr8cy5OYyt6cYznfM49LpjA2cZfV4L5VZVe3Wy5Zrm7uEfGrVeC0XCzUvVp2gdePKk3RyI1q7wVY53C0Dtx+0hFbkgSru2u0Z42vINR5Ywrs43gqpElVFaWFDvRA3rFZ8k7HVBa6b3N1T6+tu5KRMjEcY9NcDHKowvDRxnhbh4O2ECMGTAJr5K4is4DY5A1yyRZ+m3EjNHPm+yCFKnbUdz3GS+z5B3s5HYvVqM8Se6pAQ4BbX38AxhIP9hM5fwK+G+xgcmFrGryOY2xDa6jZheS7hvOUekENR9aWAAAAAElFTkSuQmCC">
   <style>
-    body { font-family: Arial, sans-serif; padding: 30px; background: #f4f9ff; }
-    h1 { color: #007bff; }
-    table { border-collapse: collapse; margin-top: 20px; width: 100%; }
-    th, td { padding: 8px 12px; border: 1px solid #ccc; text-align: center; }
-    th { background: #007bff; color: white; }
-    .grid { margin-top: 30px; }
-    .a { background-color: #28a745; color: white; }
-    .b { background-color: #ffc107; }
-    .c { background-color: #dc3545; color: white; }
+    body { transition: background-color 0.5s ease, color 0.5s ease; }
+    .dark-mode { background-color: #121212; color: #f8f9fa; }
+    .sidebar { min-height: 100vh; background-color: #007bff; color: white; padding: 20px; }
+    .sidebar h2 { font-size: 1.5rem; color: #fff; }
+    .sidebar a { color: #fff; display: block; margin: 10px 0; text-decoration: none; }
+    .sidebar a:hover { text-decoration: underline; }
+    .navbar { background-color: #f8f9fa; }
+    .navbar.dark-mode { background-color: #1f1f1f; }
+    .card { transition: transform 0.3s, box-shadow 0.3s; }
+    .card:hover { transform: scale(1.03); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
-  <h1>ABC Classification Slotting Tool</h1>
-  <input type="file" id="csvFile" accept=".csv" />
-  <button onclick="processCSV()">Upload & Process</button>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-2 sidebar">
+        <h2>AKIB SHIPPING</h2>
+        <p>Portfolio Dashboard</p>
+        <a href="#">Home</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+      </nav>
 
-  <div id="abcTable"></div>
-  <div id="optimizedGrid" class="grid"></div>
+      <!-- Main Content -->
+      <main class="col-md-10">
+        <nav class="navbar d-flex justify-content-between align-items-center px-3">
+          <h3 class="mb-0">Assignments</h3>
+          <button class="btn btn-outline-dark" onclick="toggleTheme()">Toggle Theme</button>
+        </nav>
+
+        <div class="container py-4" id="projects">
+          <div class="row row-cols-1 row-cols-md-3 g-4">
+            ${[...Array(12).keys()].map(i => `
+            <div class="col">
+              <div class="card h-100 text-center p-3">
+                <h5 class="card-title">Assignment ${i + 1}</h5>
+                <p class="card-text">${i === 10 ? 'ABC_SLOTTING_TOOL' : i === 11 ? 'Counterfeit Supplements' : 'Project Summary'}</p>
+                <a href="assignment${i + 1}/" class="btn btn-primary">View</a>
+              </div>
+            </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <footer class="text-center mt-5" id="contact">
+          <p>Connect: 
+            <a href="https://github.com/Akib00000" target="_blank">GitHub</a> | 
+            <a href="mailto:akibrahman1000@gmail.com">Email</a>
+          </p>
+          <p>&copy; 2025 AKIB SHIPPING</p>
+        </footer>
+      </main>
+    </div>
+  </div>
 
   <script>
-    let originalData = [];
-    let rows = 0;
-    let cols = 0;
-
-    function manhattan(a, b) {
-      return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
-    }
-
-    function processCSV() {
-      const file = document.getElementById('csvFile').files[0];
-      if (!file) return alert("Please upload a CSV file first.");
-
-      Papa.parse(file, {
-        complete: function(results) {
-          originalData = results.data.filter(row => row.some(cell => cell.trim() !== "")).map(row => row.map(Number));
-          rows = originalData.length;
-          cols = originalData[0].length;
-
-          const skus = [];
-          let skuNum = 0;
-          for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-              skus.push({ sku: `SKU${skuNum}`, freq: originalData[r][c], pos: [r, c] });
-              skuNum++;
-            }
-          }
-
-          // Sort by frequency
-          skus.sort((a, b) => b.freq - a.freq);
-          const total = skus.reduce((sum, item) => sum + item.freq, 0);
-          let cum = 0;
-
-          for (let i = 0; i < skus.length; i++) {
-            cum += skus[i].freq;
-            const pct = cum / total;
-            skus[i].cumulative = (pct * 100).toFixed(2);
-            skus[i].class = pct <= 0.2 ? "A" : pct <= 0.5 ? "B" : "C";
-          }
-
-          displayABCTable(skus);
-          assignToGrid(skus);
-        }
-      });
-    }
-
-    function displayABCTable(skus) {
-      let html = `<h2>ABC Classification Table</h2><table>
-        <tr><th>SKU</th><th>Frequency</th><th>Cumulative %</th><th>Class</th></tr>`;
-      for (let sku of skus) {
-        html += `<tr><td>${sku.sku}</td><td>${sku.freq}</td><td>${sku.cumulative}</td><td class="${sku.class.toLowerCase()}">${sku.class}</td></tr>`;
-      }
-      html += "</table>";
-      document.getElementById("abcTable").innerHTML = html;
-    }
-
-    function assignToGrid(skus) {
-      const dock = [0, 0];
-      const positions = [];
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          positions.push({ pos: [r, c], dist: manhattan([r, c], dock) });
-        }
-      }
-      positions.sort((a, b) => a.dist - b.dist);
-
-      const newGrid = Array.from({ length: rows }, () => Array(cols).fill(""));
-
-      for (let i = 0; i < skus.length; i++) {
-        const { pos } = positions[i];
-        const { sku, class: cls } = skus[i];
-        newGrid[pos[0]][pos[1]] = `<td class="${cls.toLowerCase()}">${sku}</td>`;
-      }
-
-      let gridHtml = "<h2>Optimized Layout Grid</h2><table>";
-      for (let r = 0; r < rows; r++) {
-        gridHtml += "<tr>" + newGrid[r].join("") + "</tr>";
-      }
-      gridHtml += "</table>";
-      document.getElementById("optimizedGrid").innerHTML = gridHtml;
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      document.querySelector('.navbar').classList.toggle('dark-mode');
     }
   </script>
 </body>
