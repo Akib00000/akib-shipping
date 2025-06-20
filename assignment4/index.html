@@ -8,37 +8,20 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #e9f2fb;
-      padding: 20px;
-    }
-    .container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    .result-card {
-      margin-top: 30px;
-      padding: 20px;
-      border-radius: 10px;
-      background: #f7faff;
-      box-shadow: inset 0 0 10px rgba(0,123,255,0.05);
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #e9f2fb; padding: 20px; }
+    .container { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+    .result-card { margin-top: 30px; padding: 20px; border-radius: 10px; background: #f7faff; box-shadow: inset 0 0 10px rgba(0,123,255,0.05); }
   </style>
 </head>
 <body>
   <div class="container">
     <h1 class="text-center">Assignment 4: Lead Time & Bullwhip Analysis</h1>
     <p class="text-center">Upload a CSV/XLSX dataset and analyze it automatically.</p>
-
     <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
       <input type="file" id="xlsxFile" accept=".xlsx,.xls,.csv" class="form-control w-auto" />
       <button class="btn btn-primary" onclick="analyze()">Analyze</button>
       <button class="btn btn-success" onclick="downloadResult()">Download Result</button>
     </div>
-
     <div id="results"></div>
     <canvas id="delayChart" height="100"></canvas>
   </div>
@@ -52,12 +35,10 @@
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        let workbook;
         try {
-          workbook = XLSX.read(e.target.result, { type: 'binary' });
+          const workbook = XLSX.read(e.target.result, { type: 'binary' });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-          console.log("Parsed rows:", rows); // DEBUG LOG
           calculateResults(rows);
         } catch (err) {
           alert("Error reading the file.");
@@ -100,14 +81,20 @@
     }
 
     function calculateResults(data) {
-      const bySupplier = groupBy(data, "Supplier", r => daysBetween(r["Order_Date"], r["Actual_Delivery_Date"]));
-      const byTransport = groupBy(data, "Transportation_Mode", r => daysBetween(r["Order_Date"], r["Actual_Delivery_Date"]));
-      const byMonth = groupBy(data, r => {
-        const d = parseDate(r["Expected_Delivery_Date"]);
-        return isNaN(d) ? null : d.toLocaleString('default', { month: 'short' });
-      }, r => daysBetween(r["Expected_Delivery_Date"], r["Actual_Delivery_Date"]));
-      const byDisruption = groupBy(data, "Disruption_Type", r => daysBetween(r["Expected_Delivery_Date"], r["Actual_Delivery_Date"]));
-      const byCategory = groupBy(data, "Product_Category", r => daysBetween(r["Order_Date"], r["Actual_Delivery_Date"]));
+      // Map actual headers
+      const mapField = (row, name) => row[name] || row[name.replace(/_/g, " ")] || "";
+
+      const bySupplier = groupBy(data, r => r["Supplier"], r => daysBetween(mapField(r, "Order_Date"), mapField(r, "Actual_Delivery_Date")));
+      const byTransport = groupBy(data, r => r["Transportation_Mode"], r => daysBetween(mapField(r, "Order_Date"), mapField(r, "Actual_Delivery_Date")));
+      const byMonth = groupBy(data,
+        r => {
+          const d = parseDate(mapField(r, "Expected_Delivery_Date"));
+          return isNaN(d) ? null : d.toLocaleString('default', { month: 'short' });
+        },
+        r => daysBetween(mapField(r, "Expected_Delivery_Date"), mapField(r, "Actual_Delivery_Date"))
+      );
+      const byDisruption = groupBy(data, r => r["Disruption_Type"], r => daysBetween(mapField(r, "Expected_Delivery_Date"), mapField(r, "Actual_Delivery_Date")));
+      const byCategory = groupBy(data, r => r["Product_Category"], r => daysBetween(mapField(r, "Order_Date"), mapField(r, "Actual_Delivery_Date")));
 
       const topSupplier = Object.entries(bySupplier).sort((a, b) => average(b[1]) - average(a[1]))[0] || ["N/A", []];
       const bestTransport = Object.entries(byTransport).sort((a, b) => average(a[1]) - average(b[1]))[0] || ["N/A", []];
@@ -127,7 +114,6 @@ Best Product Category: ${bestCategory[0]} — ${average(bestCategory[1]).toFixed
           <h2>📊 Analysis Results</h2>
           <pre>${currentOutput}</pre>
         </div>`;
-
       renderChart(byMonth);
     }
 
