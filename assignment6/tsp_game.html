@@ -1,175 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Assignment 6 – Design Thinking & TSP Game</title>
+  <meta charset="UTF-8">
+  <title>Route Runner – TSP Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-    body { background: #eef5ff; font-family: 'Segoe UI', sans-serif; padding: 30px; }
-    .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-    h1, h2, h3 { color: #007bff; margin-top: 20px; }
-    #gameCanvas { display: block; margin: 20px auto; border: 1px solid #ccc; }
-    #info { margin: 15px auto; text-align: center; }
-    .footer { text-align: center; margin-top: 40px; color: #6c757d; }
-    .btn { margin-top: 10px; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef5ff;
+      color: #333;
+    }
+    .container {
+      text-align: center;
+      padding: 20px;
+    }
+    canvas {
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-top: 20px;
+      background: #fff;
+    }
+    select, button {
+      padding: 8px 12px;
+      font-size: 16px;
+      margin: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #007bff;
+      color: white;
+    }
+    .info {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    .timer {
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Assignment 6: Design Thinking &amp; TSP Game</h1>
-    <p><strong>Student:</strong> AKIB ABU SALEH MD<br><strong>ID:</strong> 2217655</p>
+    <h1>🚚 Route Runner – TSP Game</h1>
+    <p><strong>Student:</strong> AKIB ABU SALEH MD</p>
+    <p><strong>ID:</strong> 2217655</p>
+    <p><strong>Group Members:</strong> I could not find any member to do this group project, so I completed it alone.</p>
 
-    <h2>Design Thinking Practice</h2>
-    <h3>1. Empathize</h3>
-    <p><strong>Users:</strong> Students/newcomers learning logistics through gameplay.</p>
-    <ul>
-      <li><strong>Needs:</strong> Simple, interactive, engaging route optimization tool.</li>
-      <li><strong>Challenges:</strong> Difficult logistics concepts, lack of practice.</li>
-      <li><strong>Success:</strong> Players understand route planning via gameplay.</li>
-    </ul>
-
-    <h3>2. Define</h3>
-    <p><strong>Problem:</strong> Lack of intuitive tools to teach route optimization effectively.</p>
-
-    <h3>3. Ideate</h3>
-    <ul>
-      <li>Courier robot theme with delivery points.</li>
-      <li>Click-to-choose map approach using TSP logic.</li>
-      <li>Score by total fuel/distance cost.</li>
-    </ul>
-
-    <h3>4. Prototype</h3>
-    <p>Interactive webpage with clickable nodes, real-time routing map, total-distance calculation, and feedback if rules are violated.</p>
-
-    <h3>5. Test</h3>
-    <ul>
-      <li>Tested by users for ease-of-use and engagement.</li>
-      <li>Added error messages and a reset button based on feedback.</li>
-    </ul>
-
-    <h2>Game Design Document</h2>
-    <p><strong>Title:</strong> Route Runner: The Courier Challenge</p>
-    <p><strong>Objective:</strong> Visit all delivery points (A–F) and return to base (WH) with the minimum distance.</p>
-    <p><strong>Mechanics:</strong></p>
-    <ul>
-      <li><strong>Nodes:</strong> WH (base), A–F.</li>
-      <li><strong>Edges:</strong> Straight-line distance between nodes.</li>
-      <li><strong>Validation:</strong> Each node exactly once, finish at WH.</li>
-      <li><strong>Scoring:</strong> Lower total = better.</li>
-    </ul>
-    <p><strong>Theme:</strong> Courier robot delivering parcels to each point.</p>
-
-    <h2>TSP Game Prototype</h2>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
-    <div id="info">
-      <p>Click nodes in sequence to build your route.</p>
-      <button id="resetBtn" class="btn btn-outline-primary">Reset Route</button>
-      <p id="message"></p>
-      <p><strong>Total Distance:</strong> <span id="distance">0</span></p>
+    <div>
+      <label for="levelSelect">Choose Level:</label>
+      <select id="levelSelect">
+        <option value="easy">Easy</option>
+        <option value="hard">Hard</option>
+      </select>
+      <button id="startBtn">Start Route</button>
+      <button id="resetBtn">Reset</button>
     </div>
-
-    <div class="footer">
-      &copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655
-    </div>
+    <div class="info" id="message">Click nodes in order starting from WH.</div>
+    <div class="info">Total Distance: <span id="distance">0.0</span> | Time: <span id="timer" class="timer">0.0</span> s</div>
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
   </div>
 
+  <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-29.mp3"></audio>
+  <audio id="successSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3"></audio>
+
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const message = document.getElementById('message');
-    const distEl = document.getElementById('distance');
-    const resetBtn = document.getElementById('resetBtn');
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const message = document.getElementById("message");
+    const distEl = document.getElementById("distance");
+    const timerEl = document.getElementById("timer");
+    const levelSelect = document.getElementById("levelSelect");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
 
-    const nodes = {
-      WH: { x: 80,  y: 200 },
-      A:  { x: 200, y: 80 },
-      B:  { x: 400, y: 60 },
-      C:  { x: 520, y: 200 },
-      D:  { x: 450, y: 320 },
-      E:  { x: 300, y: 300 },
-      F:  { x: 150, y: 300 }
-    };
-    const order = [];
-    let totalDist = 0;
+    const clickSound = document.getElementById("clickSound");
+    const successSound = document.getElementById("successSound");
 
-    function drawNodes() {
-      ctx.fillStyle = '#007bff';
-      ctx.font = 'bold 14px sans-serif';
-      Object.entries(nodes).forEach(([k,v]) => {
-        ctx.beginPath();
-        ctx.arc(v.x, v.y, 10, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillText(k, v.x - 8, v.y - 16);
-      });
-    }
+    let nodes = {}, order = [], totalDist = 0;
+    let avatar = null, animating = false;
+    let timer = 0, timerInterval = null;
 
-    function drawPath() {
-      if (order.length < 2) return;
-      ctx.strokeStyle = 'red';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      const p0 = nodes[order[0]];
-      ctx.moveTo(p0.x, p0.y);
-      for (let i = 1; i < order.length; i++) {
-        const p = nodes[order[i]];
-        ctx.lineTo(p.x, p.y);
+    function loadLevel(level) {
+      if (level === "easy") {
+        nodes = {
+          WH: { x: 100, y: 250 },
+          A: { x: 300, y: 100 },
+          B: { x: 500, y: 400 }
+        };
+      } else {
+        nodes = {
+          WH: { x: 100, y: 250 },
+          A: { x: 250, y: 120 },
+          B: { x: 500, y: 100 },
+          C: { x: 700, y: 300 },
+          D: { x: 400, y: 450 }
+        };
       }
-      ctx.stroke();
+      resetGame();
     }
 
     function resetGame() {
-      order.length = 0;
+      order = [];
       totalDist = 0;
-      distEl.textContent = totalDist;
-      message.textContent = '';
-      ctx.clearRect(0,0,canvas.width, canvas.height);
-      drawNodes();
-    };
+      avatar = null;
+      animating = false;
+      timer = 0;
+      clearInterval(timerInterval);
+      timerEl.textContent = '0.0';
+      distEl.textContent = '0.0';
+      message.textContent = "Click nodes in order starting from WH.";
+      draw();
+    }
 
-    resetBtn.addEventListener('click', resetGame);
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    canvas.addEventListener('click', (e) => {
+      if (order.length > 1) {
+        ctx.strokeStyle = "#28a745";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const start = nodes[order[0]];
+        ctx.moveTo(start.x, start.y);
+        for (let i = 1; i < order.length; i++) {
+          ctx.lineTo(nodes[order[i]].x, nodes[order[i]].y);
+        }
+        ctx.stroke();
+      }
+
+      if (avatar) {
+        ctx.fillStyle = "orange";
+        ctx.beginPath();
+        ctx.arc(avatar.x, avatar.y, 10, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "#007bff";
+      ctx.font = "bold 14px Segoe UI";
+      for (let [label, node] of Object.entries(nodes)) {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.fillText(label, node.x - 10, node.y - 15);
+        ctx.fillStyle = "#007bff";
+      }
+    }
+
+    canvas.addEventListener("click", (e) => {
+      if (animating) return;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      for (let key in nodes) {
-        const n = nodes[key];
-        if (Math.hypot(x - n.x, y - n.y) < 10) {
-          if (order.includes(key)) {
-            message.textContent = `🔁 You already selected ${key}`;
+      for (let label in nodes) {
+        const node = nodes[label];
+        if (Math.hypot(node.x - x, node.y - y) < 15) {
+          if (order.includes(label)) {
+            message.textContent = `⚠️ ${label} already selected.`;
             return;
           }
-          order.push(key);
-          message.textContent = `Selected ${key}`;
+          if (order.length === 0 && label !== "WH") {
+            message.textContent = "🚦 Start at WH.";
+            return;
+          }
+          order.push(label);
+          clickSound.play();
           if (order.length > 1) {
-            const p0 = nodes[order[order.length - 2]];
-            totalDist += Math.hypot(n.x - p0.x, n.y - p0.y);
+            const prev = nodes[order[order.length - 2]];
+            const curr = nodes[label];
+            totalDist += Math.hypot(curr.x - prev.x, curr.y - prev.y);
             distEl.textContent = totalDist.toFixed(1);
           }
-          ctx.clearRect(0,0,canvas.width, canvas.height);
-          drawNodes();
-          drawPath();
-
-          if (order.length === Object.keys(nodes).length) {
-            if (order[0] !== 'WH') {
-              message.textContent = '⚠️ You must start at WH';
-            } else {
-              // close route
-              const plast = nodes[order[order.length - 1]];
-              const pstart = nodes['WH'];
-              totalDist += Math.hypot(plast.x - pstart.x, plast.y - pstart.y);
-              distEl.textContent = totalDist.toFixed(1);
-              message.textContent = `🎉 Route complete! Total dist = ${totalDist.toFixed(1)}`;
-            }
+          if (order.length === 1) {
+            startTimer();
           }
+          draw();
           return;
         }
       }
     });
 
-    drawNodes();
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timer += 0.1;
+        timerEl.textContent = timer.toFixed(1);
+      }, 100);
+    }
+
+    function animateRoute(path) {
+      if (path.length < 2) {
+        animating = false;
+        clearInterval(timerInterval);
+        successSound.play();
+        message.textContent = `🎉 Delivery complete in ${timer.toFixed(1)} seconds!`;
+        return;
+      }
+
+      const from = nodes[path[0]];
+      const to = nodes[path[1]];
+      let step = 0, steps = 50;
+
+      function move() {
+        step++;
+        let t = step / steps;
+        avatar = {
+          x: from.x + (to.x - from.x) * t,
+          y: from.y + (to.y - from.y) * t
+        };
+        draw();
+        if (step < steps) {
+          requestAnimationFrame(move);
+        } else {
+          animateRoute(path.slice(1));
+        }
+      }
+      move();
+    }
+
+    startBtn.addEventListener("click", () => {
+      if (order.length !== Object.keys(nodes).length) {
+        message.textContent = "⚠️ Select all points before starting!";
+        return;
+      }
+      order.push("WH");
+      const last = nodes[order[order.length - 2]];
+      const wh = nodes["WH"];
+      totalDist += Math.hypot(wh.x - last.x, wh.y - last.y);
+      distEl.textContent = totalDist.toFixed(1);
+      animating = true;
+      animateRoute(order.slice());
+    });
+
+    resetBtn.addEventListener("click", resetGame);
+    levelSelect.addEventListener("change", () => loadLevel(levelSelect.value));
+
+    loadLevel("easy");
   </script>
+
+  <!-- Design Thinking Report Section -->
+  <div class="container" style="text-align: left; margin-top: 40px;">
+    <h2>🧠 Design Thinking Report – Route Runner</h2>
+
+    <h3>1. Empathize</h3>
+    <ul>
+      <li><strong>Users:</strong> Students and learners exploring route optimization in logistics.</li>
+      <li><strong>Needs:</strong> An engaging, interactive way to understand the TSP (Traveling Salesman Problem).</li>
+      <li><strong>Challenges:</strong> Complex concepts, static teaching methods, low engagement.</li>
+      <li><strong>Emotions:</strong> Confusion with theory, excitement with interaction, motivation via feedback.</li>
+      <li><strong>Success:</strong> Users complete routes, understand TSP concepts, and enjoy learning.</li>
+    </ul>
+
+    <h3>2. Define</h3>
+    <p><strong>Problem Statement:</strong> "Students learning logistics need an interactive and fun way to understand route optimization because traditional static methods are unengaging and hard to grasp."</p>
+
+    <h3>3. Ideate</h3>
+    <ul>
+      <li>Interactive TSP game with a delivery theme</li>
+      <li>Click-based map navigation</li>
+      <li>Live distance and time tracking</li>
+      <li>Animated avatar courier</li>
+      <li>Sound effects and two difficulty levels</li>
+    </ul>
+
+    <h3>4. Prototype</h3>
+    <p><strong>Solution:</strong> A browser-based game called <em>Route Runner</em> that allows users to click through delivery points, see real-time paths, get animated feedback, and receive sound and score updates. It helps visualize and practice TSP routing in an educational format.</p>
+    <ul>
+      <li>Start from WH (warehouse), visit all nodes once, return to base</li>
+      <li>Includes two levels: Easy and Hard</li>
+      <li>Timer and distance scoring</li>
+      <li>Courier avatar animation and audio feedback</li>
+    </ul>
+
+    <h3>5. Test</h3>
+    <ul>
+      <li><strong>Feedback:</strong> Users loved the animation, sound, and clarity.</li>
+      <li><strong>Suggestions:</strong> Add levels, scores, and dynamic routes.</li>
+      <li><strong>Response:</strong> Implemented sound, timer, difficulty modes, and avatar. Future updates may include scores or random levels.</li>
+    </ul>
+  </div>
 </body>
 </html>
