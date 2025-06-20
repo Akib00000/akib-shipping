@@ -6,45 +6,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background: #f0f8ff; font-family: 'Segoe UI', sans-serif; padding: 30px; }
-    .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-    h1, h2, h3 { color: #007bff; margin-top: 20px; }
-    pre, table { background: #f8f9fa; padding: 15px; border-radius: 5px; }
-    .footer { margin-top: 40px; text-align: center; color: #6c757d; }
+    body {
+      background: linear-gradient(to right, #e6f0ff, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 1000px;
+    }
+    h1, h2 {
+      color: #0d6efd;
+      border-bottom: 2px solid #dee2e6;
+      padding-bottom: 5px;
+    }
+    h3 {
+      color: #495057;
+      margin-top: 20px;
+    }
+    pre {
+      background: #f8f9fa;
+      border-left: 5px solid #0d6efd;
+      padding: 15px;
+      font-size: 14px;
+      overflow-x: auto;
+    }
+    table thead {
+      background: #0d6efd;
+      color: white;
+    }
+    .table-bordered td, .table-bordered th {
+      vertical-align: middle;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #6c757d;
+      font-size: 14px;
+    }
+    .badge-A { background-color: #198754; }
+    .badge-B { background-color: #ffc107; color: #212529; }
+    .badge-C { background-color: #dc3545; }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>Week 12: ABC Classification and Slotting Strategy</h1>
-  <p><strong>Student:</strong> AKIB ABU SALEH MD | <strong>ID:</strong> 2217655</p>
+  <h1 class="text-center">ABC Classification and Slotting Strategy</h1>
+  <p class="text-end"><strong>Student:</strong> AKIB ABU SALEH MD | <strong>ID:</strong> 2217655</p>
 
   <h2>1. Empathize</h2>
-  <p>Our stakeholders are warehouse pickers and logistics managers who face frequent congestion and delays in retrieving high-activity items because the layout doesn't match SKU activity levels.</p>
+  <p>Warehouse staff report congestion and delays in retrieving high-activity SKUs due to an inefficient layout that doesn’t reflect item usage frequency.</p>
 
   <h2>2. Define</h2>
   <p><strong>Problem Statement:</strong> “Our warehouse layout does not reflect SKU activity levels, causing unnecessary travel time and pick delays.”</p>
 
   <h2>3. Ideate</h2>
   <ul>
-    <li>Sort SKUs by pick frequency.</li>
-    <li>Apply Pareto analysis and classify items into A, B, and C classes.</li>
-    <li>Redesign layout so A items are nearest to the dock at (4,3).</li>
+    <li>Sort SKUs by pick frequency using Pareto analysis.</li>
+    <li>Classify SKUs into A (high), B (medium), and C (low) activity levels.</li>
+    <li>Redesign layout to bring high-frequency items closer to the dock.</li>
   </ul>
 
-  <h2>4. Prototype: ABC Classification</h2>
-  <p>Based on the heatmap and pick frequencies, here is a summary:</p>
-  <pre>
-Top A SKUs (20%): SKU29, SKU27, SKU11, SKU16, SKU5, SKU20
-Next B SKUs (30%): SKU7, SKU8, SKU25, SKU0, SKU3, SKU9, SKU12, SKU21, SKU10
-Remaining C SKUs: All others
-  </pre>
-
-  <h2>5. Revised Warehouse Layout</h2>
-  <p><strong>Dock Location:</strong> (4,3), <strong>Obstacle:</strong> (2,4)</p>
-  <p>New optimized layout:</p>
+  <h2>4. Prototype: ABC Classification Summary</h2>
   <table class="table table-bordered text-center">
     <thead>
-      <tr><th>Row/Aisle</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+      <tr>
+        <th>SKU</th>
+        <th>Frequency</th>
+        <th>Cumulative %</th>
+        <th>Class</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>SKU29</td><td>49</td><td>5.45%</td><td><span class="badge badge-A">A</span></td></tr>
+      <tr><td>SKU19</td><td>44</td><td>10.34%</td><td><span class="badge badge-A">A</span></td></tr>
+      <tr><td>SKU27</td><td>44</td><td>15.23%</td><td><span class="badge badge-A">A</span></td></tr>
+      <tr><td>SKU3</td><td>43</td><td>20.01%</td><td><span class="badge badge-A">A</span></td></tr>
+      <tr><td>SKU13</td><td>40</td><td>24.46%</td><td><span class="badge badge-B">B</span></td></tr>
+      <tr><td>SKU6</td><td>39</td><td>28.79%</td><td><span class="badge badge-B">B</span></td></tr>
+      <tr><td>SKU0</td><td>39</td><td>33.12%</td><td><span class="badge badge-B">B</span></td></tr>
+      <tr><td>SKU21</td><td>38</td><td>37.34%</td><td><span class="badge badge-B">B</span></td></tr>
+      <tr><td>SKU12</td><td>36</td><td>41.35%</td><td><span class="badge badge-B">B</span></td></tr>
+      <tr><td>SKU20</td><td>30</td><td>44.69%</td><td><span class="badge badge-B">B</span></td></tr>
+      <tr><td>SKU24</td><td>33</td><td>48.35%</td><td><span class="badge badge-B">B</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Full ABC Classification – Original Order</h3>
+  <pre>
+SKU,Frequency,Cumulative %,ABC Class
+SKU0,39,33.12,B
+SKU1,29,56.28,C
+SKU2,15,68.11,C
+...
+SKU28,25,59.63,C
+SKU29,49,5.45,A
+  </pre>
+
+  <h3>ABC Classification – Sorted by Pick Frequency</h3>
+  <pre>
+SKU,Frequency,Cumulative,Cumulative %,ABC Class
+SKU29,49,49,5.45,A
+SKU19,44,93,10.34,A
+SKU27,44,137,15.23,A
+...
+SKU22,2,753,83.80,C
+  </pre>
+
+  <h2>5. Optimized Warehouse Layout</h2>
+  <p><strong>Dock Location:</strong> (4,3), <strong>Obstacle:</strong> (2,4)</p>
+  <table class="table table-bordered text-center">
+    <thead class="table-primary">
+      <tr><th>Row</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
     </thead>
     <tbody>
       <tr><th>0</th><td>SKU4</td><td>SKU1</td><td>SKU23</td><td>SKU24</td><td>SKU17</td><td>SKU14</td></tr>
@@ -56,14 +132,10 @@ Remaining C SKUs: All others
   </table>
 
   <h2>6. Justification & Impact</h2>
-  <p>
-    The revised layout brings all A-class SKUs within close proximity to the dock at (4,3), drastically reducing walking distance and time. B-class SKUs are positioned around A zones, allowing reasonable access. C-class SKUs are stored further from the dock, where frequent access is not necessary.
-  </p>
+  <p>High-frequency (A-class) SKUs are now located nearest to the dock, reducing walking time and congestion. B-class SKUs are placed around A zones, and C-class SKUs are placed further away, balancing accessibility with priority.</p>
 
   <h2>7. Reflection</h2>
-  <p>
-    This activity taught me how slotting strategies directly impact warehouse efficiency. By analyzing pick frequencies and applying ABC classification, I learned to make decisions that can streamline logistics operations and improve worker productivity.
-  </p>
+  <p>This project helped me understand how warehouse design impacts operations. Using data-driven decisions like ABC classification improved my ability to design efficient storage layouts that support both performance and practicality.</p>
 
   <div class="footer">
     &copy; 2025 AKIB ABU SALEH MD | Student ID: 2217655
