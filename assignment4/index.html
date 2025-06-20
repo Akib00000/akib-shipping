@@ -16,9 +16,9 @@
 <body>
   <div class="container">
     <h1 class="text-center">Assignment 4: Lead Time & Bullwhip Analysis</h1>
-    <p class="text-center">Upload a CSV/XLSX dataset and analyze it automatically.</p>
+    <p class="text-center">Upload your Excel file (.xlsx) and get instant analysis.</p>
     <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
-      <input type="file" id="xlsxFile" accept=".xlsx,.xls,.csv" class="form-control w-auto" />
+      <input type="file" id="xlsxFile" accept=".xlsx" class="form-control w-auto" />
       <button class="btn btn-primary" onclick="analyze()">Analyze</button>
       <button class="btn btn-success" onclick="downloadResult()">Download Result</button>
     </div>
@@ -29,19 +29,30 @@
   <script>
     let currentOutput = "";
 
+    function normalize(str) {
+      return str ? str.toLowerCase().replace(/[\s_]+/g, "") : "";
+    }
+
     function analyze() {
       const file = document.getElementById('xlsxFile').files[0];
-      if (!file) return alert("Please upload a file!");
+      if (!file) return alert("Please upload an Excel file!");
 
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const workbook = XLSX.read(e.target.result, { type: 'binary' });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-          calculateResults(rows);
+          const wb = XLSX.read(e.target.result, { type: 'binary' });
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+          if (!data.length) return alert("No rows found in sheet.");
+          const headers = Object.keys(data[0]);
+          const map = {};
+          for (let header of headers) {
+            const key = normalize(header);
+            map[key] = header;
+          }
+          calculateResults(data, map);
         } catch (err) {
-          alert("Error reading the file.");
+          alert("Error reading Excel file.");
         }
       };
       reader.readAsBinaryString(file);
@@ -53,7 +64,7 @@
         return d ? new Date(d.y, d.m - 1, d.d) : NaN;
       } else {
         const d = new Date(val);
-        return isNaN(d.getTime()) ? NaN : d;
+        return isNaN(d) ? NaN : d;
       }
     }
 
@@ -80,21 +91,20 @@
       return groups;
     }
 
-    function calculateResults(data) {
-      // Map actual headers
-      const mapField = (row, name) => row[name] || row[name.replace(/_/g, " ")] || "";
+    function calculateResults(data, map) {
+      const get = (row, key) => row[map[normalize(key)]] || "";
 
-      const bySupplier = groupBy(data, r => r["Supplier"], r => daysBetween(mapField(r, "Order_Date"), mapField(r, "Actual_Delivery_Date")));
-      const byTransport = groupBy(data, r => r["Transportation_Mode"], r => daysBetween(mapField(r, "Order_Date"), mapField(r, "Actual_Delivery_Date")));
+      const bySupplier = groupBy(data, r => r[map["supplier"]], r => daysBetween(get(r, "Order Date"), get(r, "Actual Delivery Date")));
+      const byTransport = groupBy(data, r => r[map["transportationmode"]], r => daysBetween(get(r, "Order Date"), get(r, "Actual Delivery Date")));
       const byMonth = groupBy(data,
         r => {
-          const d = parseDate(mapField(r, "Expected_Delivery_Date"));
+          const d = parseDate(get(r, "Expected Delivery Date"));
           return isNaN(d) ? null : d.toLocaleString('default', { month: 'short' });
         },
-        r => daysBetween(mapField(r, "Expected_Delivery_Date"), mapField(r, "Actual_Delivery_Date"))
+        r => daysBetween(get(r, "Expected Delivery Date"), get(r, "Actual Delivery Date"))
       );
-      const byDisruption = groupBy(data, r => r["Disruption_Type"], r => daysBetween(mapField(r, "Expected_Delivery_Date"), mapField(r, "Actual_Delivery_Date")));
-      const byCategory = groupBy(data, r => r["Product_Category"], r => daysBetween(mapField(r, "Order_Date"), mapField(r, "Actual_Delivery_Date")));
+      const byDisruption = groupBy(data, r => r[map["disruptiontype"]], r => daysBetween(get(r, "Expected Delivery Date"), get(r, "Actual Delivery Date")));
+      const byCategory = groupBy(data, r => r[map["productcategory"]], r => daysBetween(get(r, "Order Date"), get(r, "Actual Delivery Date")));
 
       const topSupplier = Object.entries(bySupplier).sort((a, b) => average(b[1]) - average(a[1]))[0] || ["N/A", []];
       const bestTransport = Object.entries(byTransport).sort((a, b) => average(a[1]) - average(b[1]))[0] || ["N/A", []];
