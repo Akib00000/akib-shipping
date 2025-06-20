@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Route Runner – TSP Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
@@ -40,6 +40,18 @@
     .timer {
       font-weight: bold;
     }
+    #winBanner {
+      display: none;
+      font-size: 28px;
+      color: #28a745;
+      font-weight: bold;
+      margin-top: 30px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -55,16 +67,17 @@
         <option value="easy">Easy</option>
         <option value="hard">Hard</option>
       </select>
-      <button id="startBtn">Start Route</button>
       <button id="resetBtn">Reset</button>
     </div>
-    <div class="info" id="message">Click nodes in order starting from WH.</div>
+    <div class="info" id="message">Click nodes in order starting from WH and finish at WH.</div>
     <div class="info">Total Distance: <span id="distance">0.0</span> | Time: <span id="timer" class="timer">0.0</span> s</div>
     <canvas id="gameCanvas" width="800" height="500"></canvas>
+    <div id="winBanner">🎉 You Win! Route Completed! 🎉</div>
   </div>
 
+  <!-- Sound Effects -->
   <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-29.mp3"></audio>
-  <audio id="successSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3"></audio>
+  <audio id="victorySound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
@@ -73,37 +86,26 @@
     const distEl = document.getElementById("distance");
     const timerEl = document.getElementById("timer");
     const levelSelect = document.getElementById("levelSelect");
-    const startBtn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const winBanner = document.getElementById("winBanner");
 
     const clickSound = document.getElementById("clickSound");
-    const successSound = document.getElementById("successSound");
+    const victorySound = document.getElementById("victorySound");
 
-    let nodes = {}, order = [], totalDist = 0;
-    let avatar = null, animating = false;
+    let nodes = {}, order = [], visited = new Set();
+    let totalDist = 0, avatar = null, animating = false;
     let timer = 0, timerInterval = null;
 
     function loadLevel(level) {
-      if (level === "easy") {
-        nodes = {
-          WH: { x: 100, y: 250 },
-          A: { x: 300, y: 100 },
-          B: { x: 500, y: 400 }
-        };
-      } else {
-        nodes = {
-          WH: { x: 100, y: 250 },
-          A: { x: 250, y: 120 },
-          B: { x: 500, y: 100 },
-          C: { x: 700, y: 300 },
-          D: { x: 400, y: 450 }
-        };
-      }
+      nodes = level === "easy"
+        ? { WH: { x: 100, y: 250 }, A: { x: 300, y: 100 }, B: { x: 500, y: 400 } }
+        : { WH: { x: 100, y: 250 }, A: { x: 250, y: 120 }, B: { x: 500, y: 100 }, C: { x: 700, y: 300 }, D: { x: 400, y: 450 } };
       resetGame();
     }
 
     function resetGame() {
       order = [];
+      visited.clear();
       totalDist = 0;
       avatar = null;
       animating = false;
@@ -111,13 +113,13 @@
       clearInterval(timerInterval);
       timerEl.textContent = '0.0';
       distEl.textContent = '0.0';
-      message.textContent = "Click nodes in order starting from WH.";
+      winBanner.style.display = "none";
+      message.textContent = "Click nodes in order starting from WH and finish at WH.";
       draw();
     }
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       if (order.length > 1) {
         ctx.strokeStyle = "#28a745";
         ctx.lineWidth = 2;
@@ -149,40 +151,6 @@
       }
     }
 
-    canvas.addEventListener("click", (e) => {
-      if (animating) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      for (let label in nodes) {
-        const node = nodes[label];
-        if (Math.hypot(node.x - x, node.y - y) < 15) {
-          if (order.includes(label)) {
-            message.textContent = `⚠️ ${label} already selected.`;
-            return;
-          }
-          if (order.length === 0 && label !== "WH") {
-            message.textContent = "🚦 Start at WH.";
-            return;
-          }
-          order.push(label);
-          clickSound.play();
-          if (order.length > 1) {
-            const prev = nodes[order[order.length - 2]];
-            const curr = nodes[label];
-            totalDist += Math.hypot(curr.x - prev.x, curr.y - prev.y);
-            distEl.textContent = totalDist.toFixed(1);
-          }
-          if (order.length === 1) {
-            startTimer();
-          }
-          draw();
-          return;
-        }
-      }
-    });
-
     function startTimer() {
       timerInterval = setInterval(() => {
         timer += 0.1;
@@ -190,57 +158,66 @@
       }, 100);
     }
 
-    function animateRoute(path) {
-      if (path.length < 2) {
-        animating = false;
-        clearInterval(timerInterval);
-        successSound.play();
-        message.textContent = `🎉 Delivery complete in ${timer.toFixed(1)} seconds!`;
-        return;
-      }
+    canvas.addEventListener("click", (e) => {
+      if (animating) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left, y = e.clientY - rect.top;
 
-      const from = nodes[path[0]];
-      const to = nodes[path[1]];
-      let step = 0, steps = 50;
+      for (let label in nodes) {
+        const node = nodes[label];
+        if (Math.hypot(node.x - x, node.y - y) < 15) {
+          if (label === "WH" && order.length > 0 && visited.size === Object.keys(nodes).length - 1) {
+            const last = nodes[order[order.length - 1]];
+            totalDist += Math.hypot(last.x - node.x, last.y - node.y);
+            distEl.textContent = totalDist.toFixed(1);
+            clickSound.play();
+            clearInterval(timerInterval);
+            winBanner.style.display = "block";
+            victorySound.play();
+            message.textContent = `🎉 Route completed in ${timer.toFixed(1)} seconds!`;
+            order.push("WH");
+            draw();
+            return;
+          }
 
-      function move() {
-        step++;
-        let t = step / steps;
-        avatar = {
-          x: from.x + (to.x - from.x) * t,
-          y: from.y + (to.y - from.y) * t
-        };
-        draw();
-        if (step < steps) {
-          requestAnimationFrame(move);
-        } else {
-          animateRoute(path.slice(1));
+          if (label !== "WH" && visited.has(label)) {
+            message.textContent = `⚠️ ${label} already selected.`;
+            return;
+          }
+
+          if (order.length === 0 && label !== "WH") {
+            message.textContent = "🚦 Start at WH.";
+            return;
+          }
+
+          if (label === "WH" && order.length > 0) {
+            message.textContent = "WH can only be selected again to finish.";
+            return;
+          }
+
+          order.push(label);
+          if (label !== "WH") visited.add(label);
+          clickSound.play();
+
+          if (order.length > 1) {
+            const prev = nodes[order[order.length - 2]];
+            totalDist += Math.hypot(prev.x - node.x, prev.y - node.y);
+            distEl.textContent = totalDist.toFixed(1);
+          }
+
+          if (order.length === 1) startTimer();
+          draw();
+          return;
         }
       }
-      move();
-    }
-
-    startBtn.addEventListener("click", () => {
-      if (order.length !== Object.keys(nodes).length) {
-        message.textContent = "⚠️ Select all points before starting!";
-        return;
-      }
-      order.push("WH");
-      const last = nodes[order[order.length - 2]];
-      const wh = nodes["WH"];
-      totalDist += Math.hypot(wh.x - last.x, wh.y - last.y);
-      distEl.textContent = totalDist.toFixed(1);
-      animating = true;
-      animateRoute(order.slice());
     });
 
     resetBtn.addEventListener("click", resetGame);
     levelSelect.addEventListener("change", () => loadLevel(levelSelect.value));
-
     loadLevel("easy");
   </script>
 
-  <!-- Design Thinking Report Section -->
+  <!-- Design Thinking Report -->
   <div class="container" style="text-align: left; margin-top: 40px;">
     <h2>🧠 Design Thinking Report – Route Runner</h2>
 
