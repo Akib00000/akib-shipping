@@ -27,12 +27,15 @@
     animation: fadeIn 0.5s ease-in-out;
   }
   .node:hover { transform:scale(1.05); outline:2px solid #ffc107; }
-
+  #minimap {
+    position:absolute; right:20px; bottom:20px;
+    border:2px solid #ccc; background:#fff; width:160px; height:100px;
+    overflow:hidden; border-radius:8px;
+  }
   @keyframes fadeIn {
     from { opacity:0; transform:translateY(-10px); }
     to { opacity:1; transform:translateY(0); }
   }
-
   #log {
     background:#eef; padding:10px; margin:20px; border-radius:5px;
   }
@@ -49,9 +52,10 @@
     <option value="Retail">Retail</option>
   </select>
   <button onclick="addSelectedNode()" class="btn btn-sm btn-primary">Add Node</button>
-  <button onclick="instance.exportSVG()" class="btn btn-sm btn-success">Export as SVG</button>
+  <button onclick="saveFlowchart()" class="btn btn-sm btn-warning">Save</button>
+  <button onclick="loadFlowchart()" class="btn btn-sm btn-info">Load</button>
+  <button onclick="loadTemplate()" class="btn btn-sm btn-secondary">Load Template</button>
   <button onclick="exportPNG()" class="btn btn-sm btn-success">Export as PNG</button>
-  <button onclick="toggleDeleteMode()" class="btn btn-sm btn-danger">Toggle Delete Mode</button>
   <input type="color" id="colorPicker" title="Set node color">
   <select id="themePicker" class="form-select form-select-sm" style="width:auto" onchange="setTheme(this.value)">
     <option value="light">Theme: Light</option>
@@ -66,32 +70,32 @@
 </div>
 
 <div id="flowArea"></div>
+<canvas id="minimap" title="Minimap Preview"></canvas>
 
 <div id="log">
   <h5>AI & Prompt Engineering Log</h5>
   <p><em>Prompt:</em> "Create a logistics flowchart builder using jsPlumb and html2canvas."</p>
-  <p><strong>Status:</strong> Nodes are draggable, editable, deletable, and exportable.</p>
+  <p><strong>Status:</strong> Now with save/load, minimap, templates, editable & deletable nodes.</p>
 </div>
 
 <!-- Help Modal -->
 <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="helpModalLabel">Flowchart Builder Help</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <ul>
-          <li>Select a node type and click "Add Node" to add it to the canvas.</li>
-          <li>Drag and connect nodes. Double-click a node to edit its label.</li>
-          <li>Use the color picker to apply background color to new nodes.</li>
-          <li>Toggle delete mode and click nodes to remove them.</li>
-          <li>Change the theme or export your design as PNG or SVG.</li>
-        </ul>
-      </div>
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="helpModalLabel">Flowchart Builder Help</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
-  </div>
+    <div class="modal-body">
+      <ul>
+        <li>Select a node type, color it, and add it to the flowchart.</li>
+        <li>Right-click any node to delete. Double-click to rename.</li>
+        <li>Use Save/Load to store your layout locally.</li>
+        <li>Load Template adds a sample layout.</li>
+        <li>Export PNG saves your design as an image.</li>
+        <li>Use the minimap to preview layout structure.</li>
+      </ul>
+    </div>
+  </div></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jsplumb@2.15.6/dist/js/jsplumb.min.js"></script>
@@ -104,7 +108,8 @@
     Container:"flowArea"
   });
 
-  let idCount = 0, deleteMode = false, selectedColor = '#007bff';
+  let idCount = 0;
+  let selectedColor = '#007bff';
 
   document.getElementById('colorPicker').addEventListener('change', e => {
     selectedColor = e.target.value;
@@ -115,36 +120,30 @@
     addNode(type);
   }
 
-  function addNode(type) {
+  function addNode(type, left = null, top = null, color = null) {
     const id = 'node' + (++idCount);
     const div = document.createElement('div');
     div.id = id;
     div.className = 'node';
     div.textContent = type;
-    div.style.top = '20px';
-    div.style.left = (30 + (idCount % 6) * 130) + 'px';
-    div.style.background = selectedColor;
-
-    div.onclick = (e) => {
-      if (deleteMode) {
-        instance.remove(div);
-      }
-    };
+    div.style.top = top !== null ? top : '20px';
+    div.style.left = left !== null ? left : (30 + (idCount % 6) * 130) + 'px';
+    div.style.background = color || selectedColor;
 
     div.ondblclick = () => {
-      const newLabel = prompt("Edit node label:", div.textContent);
+      const newLabel = prompt("Edit label:", div.textContent);
       if (newLabel) div.textContent = newLabel;
+    };
+
+    div.oncontextmenu = (e) => {
+      e.preventDefault();
+      if (confirm("Delete this node?")) instance.remove(div);
     };
 
     document.getElementById('flowArea').append(div);
     instance.draggable(div, { containment: "parent" });
     instance.makeSource(div, { anchor: "Continuous", connector:["Flowchart",{cornerRadius:5}] });
     instance.makeTarget(div, { anchor: "Continuous" });
-  }
-
-  function toggleDeleteMode() {
-    deleteMode = !deleteMode;
-    alert(deleteMode ? "🗑️ Delete mode ENABLED: click a node to remove it." : "Delete mode DISABLED.");
   }
 
   function setTheme(value) {
@@ -160,7 +159,55 @@
     });
   }
 
-  // Add initial nodes
+  function saveFlowchart() {
+    const nodes = Array.from(document.querySelectorAll('.node')).map(n => ({
+      id: n.id,
+      text: n.textContent,
+      top: n.style.top,
+      left: n.style.left,
+      color: n.style.background
+    }));
+    localStorage.setItem('flowNodes', JSON.stringify(nodes));
+    alert("Flowchart saved!");
+  }
+
+  function loadFlowchart() {
+    const saved = localStorage.getItem('flowNodes');
+    if (saved) {
+      clearFlow();
+      JSON.parse(saved).forEach(n => addNode(n.text, n.left, n.top, n.color));
+    }
+  }
+
+  function loadTemplate() {
+    clearFlow();
+    const template = [
+      { text:'Supplier', top:'50px', left:'40px' },
+      { text:'Warehouse', top:'150px', left:'40px' },
+      { text:'Transport', top:'250px', left:'40px' },
+      { text:'Retail', top:'350px', left:'40px' }
+    ];
+    template.forEach(n => addNode(n.text, n.left, n.top));
+  }
+
+  function clearFlow() {
+    document.getElementById('flowArea').innerHTML = '';
+    instance.reset();
+    idCount = 0;
+  }
+
+  function updateMinimap() {
+    html2canvas(document.getElementById('flowArea')).then(canvas => {
+      const mini = document.getElementById('minimap');
+      const ctx = mini.getContext('2d');
+      ctx.clearRect(0, 0, mini.width, mini.height);
+      ctx.drawImage(canvas, 0, 0, mini.width, mini.height);
+    });
+  }
+
+  setInterval(updateMinimap, 1000);
+
+  // Load some nodes initially
   ['Supplier','Warehouse','Distribution','Transport','Retail'].forEach((type, i) => {
     setTimeout(() => { addNode(type); }, 200 * i);
   });
