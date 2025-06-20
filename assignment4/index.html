@@ -19,21 +19,6 @@
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
-    h1 {
-      color: #007bff;
-      background: linear-gradient(90deg, #007bff 0%, #00c6ff 100%);
-      -webkit-text-fill-color: transparent;
-      -webkit-background-clip: text;
-      margin-bottom: 20px;
-    }
-    .btn-primary {
-      background: #0069d9;
-      border: none;
-      transition: background 0.3s;
-    }
-    .btn-primary:hover {
-      background: #0056b3;
-    }
     .result-card {
       margin-top: 30px;
       padding: 20px;
@@ -41,113 +26,88 @@
       background: #f7faff;
       box-shadow: inset 0 0 10px rgba(0,123,255,0.05);
     }
-    .result-card h2 {
-      color: #0056b3;
-      margin-bottom: 15px;
-    }
-    .chart-container {
-      margin-top: 30px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1 class="text-center">Assignment 4: Lead Time & Bullwhip Analysis</h1>
-    <p class="lead text-center">Upload your procurement dataset (.xlsx, CSV, etc.) to analyze lead and delay times.</p>
+    <p class="text-center">Upload a CSV/XLSX dataset and analyze it automatically.</p>
 
-    <div class="d-flex flex-wrap gap-2 justify-content-center mb-4">
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
       <input type="file" id="xlsxFile" accept=".xlsx,.xls,.csv" class="form-control w-auto" />
-      <button class="btn btn-primary" onclick="analyze()">
-        Analyze
-      </button>
+      <button class="btn btn-primary" onclick="analyze()">Analyze</button>
+      <button class="btn btn-success" onclick="downloadResult()">Download Result</button>
     </div>
 
     <div id="results"></div>
-    <div class="chart-container">
-      <canvas id="delayChart" height="80"></canvas>
-    </div>
+    <canvas id="delayChart" height="100"></canvas>
   </div>
 
   <script>
+    let currentOutput = "";
+
     function analyze() {
       const file = document.getElementById('xlsxFile').files[0];
       if (!file) return alert("Please upload a file!");
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        let data, workbook;
+        let workbook;
         try {
-          if (file.name.endsWith('.csv')) {
-            data = e.target.result;
-            const arr = data.split("\n").map(r => r.split(","));
-            workbook = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(arr);
-            XLSX.utils.book_append_sheet(workbook, ws, "Sheet1");
-          } else {
-            workbook = XLSX.read(e.target.result, { type: 'binary' });
-          }
+          workbook = XLSX.read(e.target.result, { type: 'binary' });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+          console.log("Parsed rows:", rows); // DEBUG LOG
           calculateResults(rows);
         } catch (err) {
-          alert("Error parsing file. Make sure it's a valid XLSX, XLS, or CSV.");
-          console.error(err);
+          alert("Error reading the file.");
         }
       };
       reader.readAsBinaryString(file);
     }
 
-    function parseExcelDate(val) {
+    function parseDate(val) {
       if (typeof val === 'number') {
-        const date = XLSX.SSF.parse_date_code(val);
-        return date ? new Date(date.y, date.m - 1, date.d) : NaN;
+        const d = XLSX.SSF.parse_date_code(val);
+        return d ? new Date(d.y, d.m - 1, d.d) : NaN;
+      } else {
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? NaN : d;
       }
-      const d = new Date(val);
-      return isNaN(d) ? NaN : d;
     }
 
-    function calculateDays(d1Raw, d2Raw) {
-      const d1 = parseExcelDate(d1Raw);
-      const d2 = parseExcelDate(d2Raw);
-      return (!isNaN(d1) && !isNaN(d2))
-        ? (d2 - d1) / (1000 * 60 * 60 * 24)
-        : NaN;
+    function daysBetween(d1, d2) {
+      d1 = parseDate(d1);
+      d2 = parseDate(d2);
+      return (!isNaN(d1) && !isNaN(d2)) ? (d2 - d1) / (1000 * 60 * 60 * 24) : NaN;
     }
 
     function average(arr) {
       return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : NaN;
     }
 
-    function groupBy(rows, keyFn, valFn) {
-      const map = {};
-      rows.forEach(r => {
-        const key = typeof keyFn === 'function' ? keyFn(r) : r[keyFn];
-        const v = valFn(r);
-        if (key && !isNaN(v)) {
-          map[key] = map[key] || [];
-          map[key].push(v);
+    function groupBy(data, keyFn, valFn) {
+      const groups = {};
+      for (const row of data) {
+        const key = typeof keyFn === 'function' ? keyFn(row) : row[keyFn];
+        const val = valFn(row);
+        if (key && !isNaN(val)) {
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(val);
         }
-      });
-      return map;
+      }
+      return groups;
     }
 
     function calculateResults(data) {
-      if (data.length === 0) {
-        alert("No data found.");
-        return;
-      }
-      const bySupplier = groupBy(data, "Supplier", r => calculateDays(r["Order_Date"], r["Actual_Delivery_Date"]));
-      const byTransport = groupBy(data, "Transportation_Mode", r => calculateDays(r["Order_Date"], r["Actual_Delivery_Date"]));
+      const bySupplier = groupBy(data, "Supplier", r => daysBetween(r["Order_Date"], r["Actual_Delivery_Date"]));
+      const byTransport = groupBy(data, "Transportation_Mode", r => daysBetween(r["Order_Date"], r["Actual_Delivery_Date"]));
       const byMonth = groupBy(data, r => {
-        const d = parseExcelDate(r["Expected_Delivery_Date"]);
+        const d = parseDate(r["Expected_Delivery_Date"]);
         return isNaN(d) ? null : d.toLocaleString('default', { month: 'short' });
-      }, r => calculateDays(r["Expected_Delivery_Date"], r["Actual_Delivery_Date"]));
-      const byDisruption = groupBy(data, "Disruption_Type", r => calculateDays(r["Expected_Delivery_Date"], r["Actual_Delivery_Date"]));
-      const byCategory = groupBy(data, "Product_Category", r => calculateDays(r["Order_Date"], r["Actual_Delivery_Date"]));
+      }, r => daysBetween(r["Expected_Delivery_Date"], r["Actual_Delivery_Date"]));
+      const byDisruption = groupBy(data, "Disruption_Type", r => daysBetween(r["Expected_Delivery_Date"], r["Actual_Delivery_Date"]));
+      const byCategory = groupBy(data, "Product_Category", r => daysBetween(r["Order_Date"], r["Actual_Delivery_Date"]));
 
       const topSupplier = Object.entries(bySupplier).sort((a, b) => average(b[1]) - average(a[1]))[0] || ["N/A", []];
       const bestTransport = Object.entries(byTransport).sort((a, b) => average(a[1]) - average(b[1]))[0] || ["N/A", []];
@@ -155,15 +115,19 @@
       const worstDisrupt = Object.entries(byDisruption).filter(e => e[0] && e[0] !== "None").sort((a, b) => average(b[1]) - average(a[1]))[0] || ["N/A", []];
       const bestCategory = Object.entries(byCategory).sort((a, b) => average(a[1]) - average(b[1]))[0] || ["N/A", []];
 
-      document.getElementById('results').innerHTML = `
+      currentOutput = `
+Supplier with Highest Avg Lead Time: ${topSupplier[0]} — ${average(topSupplier[1]).toFixed(2)} days
+Fastest Transport Mode: ${bestTransport[0]} — ${average(bestTransport[1]).toFixed(2)} days
+Month with Highest Avg Delay: ${worstMonth[0]} — ${average(worstMonth[1]).toFixed(2)} days
+Worst Disruption Type: ${worstDisrupt[0]} — ${average(worstDisrupt[1]).toFixed(2)} days
+Best Product Category: ${bestCategory[0]} — ${average(bestCategory[1]).toFixed(2)} days`;
+
+      document.getElementById("results").innerHTML = `
         <div class="result-card">
           <h2>📊 Analysis Results</h2>
-          <p><strong>Supplier w/ Highest Avg Lead Time:</strong> ${topSupplier[0]} — ${average(topSupplier[1]).toFixed(2)} days</p>
-          <p><strong>Fastest Transport Mode:</strong> ${bestTransport[0]} — ${average(bestTransport[1]).toFixed(2)} days</p>
-          <p><strong>Month w/ Highest Avg Delay:</strong> ${worstMonth[0]} — ${average(worstMonth[1]).toFixed(2)} days</p>
-          <p><strong>Worst Disruption Type:</strong> ${worstDisrupt[0]} — ${average(worstDisrupt[1]).toFixed(2)} days</p>
-          <p><strong>Best Product Category:</strong> ${bestCategory[0]} — ${average(bestCategory[1]).toFixed(2)} days</p>
+          <pre>${currentOutput}</pre>
         </div>`;
+
       renderChart(byMonth);
     }
 
@@ -173,9 +137,21 @@
       const values = labels.map(l => average(grouped[l]).toFixed(2));
       new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: [{ label: 'Avg Delay by Month (days)', data: values, backgroundColor: 'rgba(0,123,255,0.6)' }] },
+        data: {
+          labels,
+          datasets: [{ label: 'Avg Delay by Month', data: values, backgroundColor: 'rgba(0,123,255,0.6)' }]
+        },
         options: { responsive: true, plugins: { legend: { display: false } } }
       });
+    }
+
+    function downloadResult() {
+      if (!currentOutput) return alert("No result to download yet.");
+      const blob = new Blob([currentOutput], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = "analysis_result.txt";
+      a.click();
     }
   </script>
 </body>
