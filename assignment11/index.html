@@ -2,77 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Week 13 - Counterfeit Supplements Analysis</title>
+  <title>ABC Slotting Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; background-color: #f9f9f9; }
-    h1, h2, h3 { color: #2c3e50; }
-    h1 { font-size: 28px; }
-    h2 { font-size: 22px; margin-top: 30px; }
-    h3 { font-size: 18px; margin-top: 20px; }
-    ul { padding-left: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 8px; }
-    th { background-color: #eee; }
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f4f9ff; }
+    h1 { color: #007bff; }
+    table { border-collapse: collapse; margin-top: 20px; width: 100%; }
+    th, td { padding: 8px 12px; border: 1px solid #ccc; text-align: center; }
+    th { background: #007bff; color: white; }
+    .grid { margin-top: 30px; }
+    .a { background-color: #28a745; color: white; }
+    .b { background-color: #ffc107; }
+    .c { background-color: #dc3545; color: white; }
   </style>
 </head>
 <body>
+  <h1>ABC Classification Slotting Tool</h1>
+  <input type="file" id="csvFile" accept=".csv" />
+  <button onclick="processCSV()">Upload & Process</button>
 
-<h1>📦 Week 13 - Counterfeit Supplements Analysis</h1>
+  <div id="abcTable"></div>
+  <div id="optimizedGrid" class="grid"></div>
 
-<h2>🔍 Problem Overview</h2>
-<p>Amazon’s commingled inventory system mixes identical products from different sellers, making distribution fast—but increasing the risk of counterfeit supplements. Our goal is to detect these fakes by analyzing listing data.</p>
+  <script>
+    let originalData = [];
+    let rows = 0;
+    let cols = 0;
 
-<h2>🎯 Assignment Goals</h2>
-<ul>
-  <li>Classify data fields into USEFUL, NOISE, and UNSURE</li>
-  <li>Explain the importance of USEFUL fields</li>
-  <li>Propose hypotheses for identifying fake supplements</li>
-</ul>
+    function manhattan(a, b) {
+      return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+    }
 
-<h2>📊 Field Categorization</h2>
-<table>
-  <thead>
-    <tr><th>Field</th><th>Category</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>listing_id</td><td>USEFUL</td></tr>
-    <tr><td>product_title</td><td>USEFUL</td></tr>
-    <tr><td>brand_name</td><td>USEFUL</td></tr>
-    <tr><td>seller_id</td><td>USEFUL</td></tr>
-    <tr><td>average_rating</td><td>USEFUL</td></tr>
-    <tr><td>review_count</td><td>USEFUL</td></tr>
-    <tr><td>price</td><td>USEFUL</td></tr>
-    <tr><td>product_category</td><td>USEFUL</td></tr>
-    <tr><td>fulfilled_by</td><td>USEFUL</td></tr>
-    <tr><td>inventory_type</td><td>USEFUL</td></tr>
-    <tr><td>image_url</td><td>NOISE</td></tr>
-    <tr><td>listing_url</td><td>NOISE</td></tr>
-    <tr><td>asin</td><td>NOISE</td></tr>
-    <tr><td>package_size</td><td>UNSURE</td></tr>
-    <tr><td>date_first_available</td><td>UNSURE</td></tr>
-  </tbody>
-</table>
+    function processCSV() {
+      const file = document.getElementById('csvFile').files[0];
+      if (!file) return alert("Please upload a CSV file first.");
 
-<h2>📌 Explanations for USEFUL Fields</h2>
-<ul>
-  <li><strong>listing_id:</strong> Tracks individual product entries.</li>
-  <li><strong>product_title:</strong> Can reveal subtle name changes often used by counterfeiters.</li>
-  <li><strong>brand_name:</strong> Helps identify spoofed or uncommon brands.</li>
-  <li><strong>seller_id:</strong> Useful for spotting repeat offenders.</li>
-  <li><strong>average_rating:</strong> Lower ratings can signal customer dissatisfaction with fakes.</li>
-  <li><strong>review_count:</strong> Low count might indicate a new or suspicious listing.</li>
-  <li><strong>price:</strong> Fakes often undercut market prices significantly.</li>
-  <li><strong>product_category:</strong> Confirms we’re analyzing actual supplements.</li>
-  <li><strong>fulfilled_by:</strong> Commingling increases counterfeit risks for Amazon-fulfilled items.</li>
-  <li><strong>inventory_type:</strong> Returned or used products may include counterfeits.</li>
-</ul>
+      Papa.parse(file, {
+        complete: function(results) {
+          originalData = results.data.filter(row => row.some(cell => cell.trim() !== "")).map(row => row.map(Number));
+          rows = originalData.length;
+          cols = originalData[0].length;
 
-<h2>🧠 Hypotheses (IF ... THEN ...)</h2>
-<ol>
-  <li><strong>IF</strong> a product is priced significantly below the category average, <strong>THEN</strong> it may be counterfeit.</li>
-  <li><strong>IF</strong> a seller_id appears frequently among low-rated listings, <strong>THEN</strong> they may be distributing fake products.</li>
-  <li><strong>IF</strong> a product is fulfilled by Amazon and inventory_type is not "new", <strong>THEN</strong> it has a higher counterfeit risk due to returns being commingled.</li>
-</ol>
+          const skus = [];
+          let skuNum = 0;
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              skus.push({ sku: `SKU${skuNum}`, freq: originalData[r][c], pos: [r, c] });
+              skuNum++;
+            }
+          }
 
+          // Sort by frequency
+          skus.sort((a, b) => b.freq - a.freq);
+          const total = skus.reduce((sum, item) => sum + item.freq, 0);
+          let cum = 0;
+
+          for (let i = 0; i < skus.length; i++) {
+            cum += skus[i].freq;
+            const pct = cum / total;
+            skus[i].cumulative = (pct * 100).toFixed(2);
+            skus[i].class = pct <= 0.2 ? "A" : pct <= 0.5 ? "B" : "C";
+          }
+
+          displayABCTable(skus);
+          assignToGrid(skus);
+        }
+      });
+    }
+
+    function displayABCTable(skus) {
+      let html = `<h2>ABC Classification Table</h2><table>
+        <tr><th>SKU</th><th>Frequency</th><th>Cumulative %</th><th>Class</th></tr>`;
+      for (let sku of skus) {
+        html += `<tr><td>${sku.sku}</td><td>${sku.freq}</td><td>${sku.cumulative}</td><td class="${sku.class.toLowerCase()}">${sku.class}</td></tr>`;
+      }
+      html += "</table>";
+      document.getElementById("abcTable").innerHTML = html;
+    }
+
+    function assignToGrid(skus) {
+      const dock = [0, 0];
+      const positions = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          positions.push({ pos: [r, c], dist: manhattan([r, c], dock) });
+        }
+      }
+      positions.sort((a, b) => a.dist - b.dist);
+
+      const newGrid = Array.from({ length: rows }, () => Array(cols).fill(""));
+
+      for (let i = 0; i < skus.length; i++) {
+        const { pos } = positions[i];
+        const { sku, class: cls } = skus[i];
+        newGrid[pos[0]][pos[1]] = `<td class="${cls.toLowerCase()}">${sku}</td>`;
+      }
+
+      let gridHtml = "<h2>Optimized Layout Grid</h2><table>";
+      for (let r = 0; r < rows; r++) {
+        gridHtml += "<tr>" + newGrid[r].join("") + "</tr>";
+      }
+      gridHtml += "</table>";
+      document.getElementById("optimizedGrid").innerHTML = gridHtml;
+    }
+  </script>
 </body>
 </html>
