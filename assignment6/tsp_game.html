@@ -52,6 +52,18 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+    .report-section {
+      text-align: left;
+      margin-top: 40px;
+      padding: 0 10%;
+    }
+    .report-section h2 {
+      color: #003366;
+    }
+    .report-section h3 {
+      margin-top: 20px;
+      color: #00509e;
+    }
   </style>
 </head>
 <body>
@@ -69,15 +81,18 @@
       </select>
       <button id="resetBtn">Reset</button>
     </div>
+
     <div class="info" id="message">Click nodes in order starting from WH and finish at WH.</div>
     <div class="info">Total Distance: <span id="distance">0.0</span> | Time: <span id="timer" class="timer">0.0</span> s</div>
+    <div class="info">Best Score: <span id="bestScore">n/a</span></div>
+
     <canvas id="gameCanvas" width="800" height="500"></canvas>
     <div id="winBanner">🎉 You Win! Route Completed! 🎉</div>
   </div>
 
   <!-- Sound Effects -->
-  <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-29.mp3"></audio>
-  <audio id="victorySound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+  <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-29.mp3" preload="auto"></audio>
+  <audio id="victorySound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
@@ -85,6 +100,7 @@
     const message = document.getElementById("message");
     const distEl = document.getElementById("distance");
     const timerEl = document.getElementById("timer");
+    const bestScoreEl = document.getElementById("bestScore");
     const levelSelect = document.getElementById("levelSelect");
     const resetBtn = document.getElementById("resetBtn");
     const winBanner = document.getElementById("winBanner");
@@ -95,6 +111,18 @@
     let nodes = {}, order = [], visited = new Set();
     let totalDist = 0, avatar = null, animating = false;
     let timer = 0, timerInterval = null;
+
+    let bestScore = localStorage.getItem("routeRunnerBest");
+    bestScoreEl.textContent = bestScore ?? "n/a";
+
+    function updateBestScore(dist, time) {
+      const score = (dist + time).toFixed(1);
+      if (!bestScore || parseFloat(score) < parseFloat(bestScore)) {
+        bestScore = score;
+        localStorage.setItem("routeRunnerBest", score);
+        bestScoreEl.textContent = score;
+      }
+    }
 
     function loadLevel(level) {
       nodes = level === "easy"
@@ -170,12 +198,12 @@
             const last = nodes[order[order.length - 1]];
             totalDist += Math.hypot(last.x - node.x, last.y - node.y);
             distEl.textContent = totalDist.toFixed(1);
-            clickSound.play();
+            order.push("WH");
             clearInterval(timerInterval);
+            updateBestScore(totalDist, timer);
             winBanner.style.display = "block";
             victorySound.play();
             message.textContent = `🎉 Route completed in ${timer.toFixed(1)} seconds!`;
-            order.push("WH");
             draw();
             return;
           }
@@ -218,7 +246,7 @@
   </script>
 
   <!-- Design Thinking Report -->
-  <div class="container" style="text-align: left; margin-top: 40px;">
+  <div class="report-section">
     <h2>🧠 Design Thinking Report – Route Runner</h2>
 
     <h3>1. Empathize</h3>
